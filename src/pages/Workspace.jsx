@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Sparkles, ShieldAlert, FileText, CheckCircle2, ChevronRight, Download, 
+import {
+    Database, Table, Calculator, HardDrive, Lock, FileDown, PlusCircle, PenTool, BookOpen, 
+    Sparkles, ShieldAlert, FileText, CheckCircle2, ChevronRight, Download, FileSpreadsheet, UploadCloud, TrendingDown, Zap, Settings, 
     Printer, Send, Sliders, RefreshCw, Layers, Calendar, AlertTriangle, 
     HelpCircle, UserCheck, DollarSign, Cpu, Trash2, Edit3, Plus, Search, Eye,
-    Shield, CalendarDays
+    Shield, CalendarDays, Users
 } from 'lucide-react';
 
 const INPUT_STYLE = "px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all";
@@ -44,7 +45,13 @@ export default function Workspace() {
     const [targetPercentage, setTargetPercentage] = useState(5); // % reduction
     const [targetNominal, setTargetNominal] = useState(2500000000.00); // Nominal target
     const [useLumpsumOverride, setUseLumpsumOverride] = useState(false);
-    const [rabTab, setRabTab] = useState('rekap'); // 'rekap' | 'boq' | 'ahsp' | 'upah' | 'bahan' | 'alat'
+    const [isBoqUploaded, setIsBoqUploaded] = useState(false);
+    const [isSimulatingAi, setIsSimulatingAi] = useState(false);
+    const [rabActiveSheet, setRabActiveSheet] = useState('hsd'); // 'hsd' | 'ahsp' | 'boq' | 'rekap'
+    const [profitMargin, setProfitMargin] = useState(10); // Default 10%
+    const [rabTotal, setRabTotal] = useState(11500000000); // Dummy HPS
+    const [isApendoSyncing, setIsApendoSyncing] = useState(false);
+
     const [isSpseFilled, setIsSpseFilled] = useState(false);
     const [isSpseFilling, setIsSpseFilling] = useState(false);
 
@@ -443,12 +450,11 @@ export default function Workspace() {
                 {/* Left Sidebar Menu */}
                 <div className="space-y-2">
                     {[
-                        { id: 'overview', label: 'Ringkasan & System Logs', icon: Cpu },
+                        { id: 'overview', label: 'Resume Persyaratan', icon: Cpu },
                         { id: 'administrasi', label: 'Dokumen Administrasi', icon: FileText },
-                        { id: 'kualifikasi', label: 'Kualifikasi & KSO Hub', icon: UserCheck },
-                        { id: 'teknis', label: 'Persyaratan Teknis', icon: Layers },
-                        { id: 'permohonan', label: 'Permohonan Dukungan', icon: Send },
-                        { id: 'rab', label: 'RAB & BOQ Workspace', icon: DollarSign },
+                        { id: 'kualifikasi', label: 'Dokumen Kualifikasi', icon: UserCheck },
+                        { id: 'teknis', label: 'Dokumen Teknis', icon: Layers },
+                        { id: 'rab', label: 'Penawaran Harga', icon: DollarSign },
                     ].filter(tab => {
                         if (simulatedRole === 'estimator') {
                             return tab.id === 'rab';
@@ -475,168 +481,126 @@ export default function Workspace() {
                 {/* Main Action Board */}
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[500px]">
                     
-                    {/* ========== TAB 1: OVERVIEW ========== */}
+                    {/* ========== TAB 1: RESUME PERSYARATAN ========== */}
                     {subTab === 'overview' && (
-                        <div className="p-6 space-y-6 animate-in fade-in duration-200">
-                            
-                            {/* 1. MASTER PROGRESS TRACKER */}
-                            <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row gap-8 items-center border border-slate-800">
-                                <div className="shrink-0 relative flex items-center justify-center">
-                                    <svg className="w-24 h-24 transform -rotate-90">
-                                        <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-800" />
-                                        <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray="251.2" strokeDashoffset="62.8" className="text-emerald-400" />
-                                    </svg>
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                        <span className="text-2xl font-black">75%</span>
-                                    </div>
-                                </div>
-                                <div className="flex-1 space-y-4 w-full">
-                                    <div>
-                                        <h2 className="text-xl font-bold">Kesiapan Penawaran: Menunggu Penyelesaian Teknis</h2>
-                                        <p className="text-xs text-slate-400 mt-1">Selesaikan seluruh indikator merah dan kuning sebelum batas waktu pemasukan dokumen penawaran berakhir (25 Juli 2026 14:00).</p>
-                                    </div>
-                                    <div className="grid grid-cols-4 gap-3">
-                                        <div className="bg-slate-800/50 border border-slate-700 p-3 rounded-xl">
-                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Administrasi</div>
-                                            <div className="text-sm font-bold text-emerald-400 flex items-center gap-1"><CheckCircle2 size={14}/> 3/3 Selesai</div>
-                                        </div>
-                                        <div className="bg-slate-800/50 border border-slate-700 p-3 rounded-xl">
-                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Kualifikasi</div>
-                                            <div className="text-sm font-bold text-emerald-400 flex items-center gap-1"><CheckCircle2 size={14}/> 100% Valid</div>
-                                        </div>
-                                        <div className="bg-rose-900/20 border border-rose-800/50 p-3 rounded-xl">
-                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Teknis</div>
-                                            <div className="text-sm font-bold text-rose-400 flex items-center gap-1"><AlertTriangle size={14}/> 2/7 Tersisa</div>
-                                        </div>
-                                        <div className="bg-amber-900/20 border border-amber-800/50 p-3 rounded-xl">
-                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Harga (RAB)</div>
-                                            <div className="text-sm font-bold text-amber-400 flex items-center gap-1"><HelpCircle size={14}/> Draf Belum Dikunci</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-6">
-                                {/* 2. SMART CHECKLIST */}
-                                <div className="col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[500px]">
-                                    <div className="p-4 border-b border-slate-200 flex justify-between items-center">
+                        <div className="flex flex-col h-full bg-slate-50 p-6 overflow-y-auto">
+                            <div className="max-w-4xl mx-auto w-full space-y-8">
+                                
+                                {/* Overall Progress */}
+                                <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
+                                    <div className="flex justify-between items-end mb-4">
                                         <div>
-                                            <h3 className="font-bold text-slate-800 flex items-center gap-2"><Layers size={16} className="text-blue-600"/> Daftar Periksa (Smart Checklist)</h3>
-                                            <p className="text-[10px] text-slate-500">Dihasilkan otomatis berdasarkan syarat Dokumen Pemilihan</p>
+                                            <h2 className="text-xl font-black text-slate-800">Status Kelengkapan Tender</h2>
+                                            <p className="text-sm text-slate-500 mt-1">Selesaikan seluruh persyaratan sebelum batas akhir penawaran.</p>
                                         </div>
+                                        <div className="text-3xl font-black text-indigo-600">65%</div>
                                     </div>
-                                    <div className="p-4 flex-1 overflow-y-auto space-y-4">
-                                        <div>
-                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Pilar 1: Administrasi</div>
-                                            <div className="space-y-2">
-                                                <div className="flex items-start justify-between p-2 rounded-lg bg-emerald-50 border border-emerald-100">
-                                                    <div className="flex gap-2">
-                                                        <CheckCircle2 size={14} className="text-emerald-600 mt-0.5 shrink-0"/>
-                                                        <div>
-                                                            <p className="text-xs font-bold text-emerald-800">Surat Penawaran</p>
-                                                            <p className="text-[10px] text-emerald-600">Diset menggunakan integrasi APENDO SPSE.</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-start justify-between p-2 rounded-lg bg-emerald-50 border border-emerald-100">
-                                                    <div className="flex gap-2">
-                                                        <CheckCircle2 size={14} className="text-emerald-600 mt-0.5 shrink-0"/>
-                                                        <div>
-                                                            <p className="text-xs font-bold text-emerald-800">Jaminan Penawaran</p>
-                                                            <p className="text-[10px] text-emerald-600">File asuransi Rp 57,794,400 telah divalidasi (Askrindo).</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2">Pilar 2: Teknis</div>
-                                            <div className="space-y-2">
-                                                <div className="flex items-start justify-between p-2 rounded-lg bg-emerald-50 border border-emerald-100">
-                                                    <div className="flex gap-2">
-                                                        <CheckCircle2 size={14} className="text-emerald-600 mt-0.5 shrink-0"/>
-                                                        <div>
-                                                            <p className="text-xs font-bold text-emerald-800">Rencana Keselamatan Konstruksi (RKK)</p>
-                                                            <p className="text-[10px] text-emerald-600">Ter-generate otomatis 100%.</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-start justify-between p-2 rounded-lg bg-rose-50 border border-rose-100">
-                                                    <div className="flex gap-2">
-                                                        <AlertTriangle size={14} className="text-rose-600 mt-0.5 shrink-0"/>
-                                                        <div>
-                                                            <p className="text-xs font-bold text-rose-800">Personel Manajerial</p>
-                                                            <p className="text-[10px] text-rose-600">Kekurangan 1 Personel: Ahli Arsitektur Madya.</p>
-                                                        </div>
-                                                    </div>
-                                                    <button onClick={() => {setSubTab('teknis'); setTeknisSubTab('personel')}} className="text-[10px] font-bold bg-white text-rose-700 border border-rose-200 px-2 py-1 rounded hover:bg-rose-100">Perbaiki</button>
-                                                </div>
-                                                <div className="flex items-start justify-between p-2 rounded-lg bg-amber-50 border border-amber-100">
-                                                    <div className="flex gap-2">
-                                                        <HelpCircle size={14} className="text-amber-600 mt-0.5 shrink-0"/>
-                                                        <div>
-                                                            <p className="text-xs font-bold text-amber-800">Jadwal & Metode Pelaksanaan</p>
-                                                            <p className="text-[10px] text-amber-600">Kurva S belum diselaraskan dengan bobot RAB.</p>
-                                                        </div>
-                                                    </div>
-                                                    <button className="text-[10px] font-bold bg-white text-amber-700 border border-amber-200 px-2 py-1 rounded hover:bg-amber-100">Perbaiki</button>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <div className="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden">
+                                        <div className="bg-indigo-600 h-3 rounded-full" style={{width: '65%'}}></div>
+                                    </div>
+                                    <div className="flex justify-between text-[11px] font-bold text-slate-400 uppercase">
+                                        <span>Persiapan Awal</span>
+                                        <span>Siap Kirim ke SPSE</span>
                                     </div>
                                 </div>
 
-                                <div className="space-y-6 flex flex-col h-[500px]">
-                                    {/* 3. AI POKJA SIMULATOR */}
-                                    <div className="bg-indigo-900 rounded-2xl border border-indigo-800 shadow-sm p-5 text-white flex-shrink-0 relative overflow-hidden">
-                                        <div className="absolute -right-4 -top-4 opacity-10">
-                                            <Shield size={100} />
+                                {/* Requirements Checklist */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    
+                                    {/* Administrasi */}
+                                    <div className="bg-white rounded-xl border border-slate-200 p-6">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h3 className="font-bold text-slate-800 flex items-center gap-2"><FileText size={16} className="text-blue-500"/> Administrasi</h3>
+                                            <span className="px-2 py-1 bg-amber-50 text-amber-700 text-[10px] font-bold rounded">In Progress</span>
                                         </div>
-                                        <h3 className="font-bold text-indigo-100 flex items-center gap-2 mb-1 relative z-10"><ShieldAlert size={16} className="text-indigo-300"/> AI Pokja Simulator</h3>
-                                        <p className="text-[10px] text-indigo-300 mb-4 relative z-10">Evaluasi dokumen Anda seolah-olah Anda adalah Panitia Pokja Pemilihan untuk menemukan kesalahan fatal.</p>
-                                        
-                                        <button className="w-full py-2 bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-bold rounded-xl shadow-md transition-all relative z-10 flex items-center justify-center gap-2">
-                                            <Sparkles size={14}/> Jalankan Audit Kelengkapan
-                                        </button>
-                                    </div>
-
-                                    {/* 4. ACTIONABLE AUDIT TRAIL */}
-                                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex-1 flex flex-col overflow-hidden">
-                                        <div className="p-4 border-b border-slate-200">
-                                            <h3 className="font-bold text-slate-800 flex items-center gap-2"><Cpu size={16} className="text-slate-400"/> Audit Trail (Log Sistem)</h3>
-                                        </div>
-                                        <div className="p-4 flex-1 overflow-y-auto space-y-3">
-                                            <div className="border-l-2 border-emerald-400 pl-3">
-                                                <p className="text-[9px] text-slate-400 font-mono">14:30 WIB</p>
-                                                <p className="text-xs text-slate-700"><span className="font-bold text-emerald-600">Sistem AI</span> berhasil men-generate 100% dokumen RKK.</p>
-                                            </div>
-                                            <div className="border-l-2 border-slate-200 pl-3">
-                                                <p className="text-[9px] text-slate-400 font-mono">14:15 WIB</p>
-                                                <p className="text-xs text-slate-700"><span className="font-bold text-slate-600">User</span> mengunggah asuransi Jaminan Penawaran.</p>
-                                            </div>
-                                            <div className="border-l-2 border-rose-400 pl-3">
-                                                <p className="text-[9px] text-slate-400 font-mono">13:50 WIB</p>
-                                                <p className="text-xs text-slate-700"><span className="font-bold text-rose-600">Validasi</span> Masa berlaku SKK Personel "Budi Santoso" hampir habis.</p>
-                                            </div>
+                                        <div className="space-y-3 text-sm">
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <input type="checkbox" checked readOnly className="w-4 h-4 text-emerald-600 rounded" />
+                                                <span className="text-slate-600 line-through">Surat Penawaran (Otomatis SPSE)</span>
+                                            </label>
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <input type="checkbox" checked readOnly className="w-4 h-4 text-emerald-600 rounded" />
+                                                <span className="text-slate-600 line-through">Jaminan Penawaran</span>
+                                            </label>
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <input type="checkbox" className="w-4 h-4 rounded border-slate-300" />
+                                                <span className="text-slate-700 font-semibold">Pakta Integritas</span>
+                                            </label>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* 5. FINAL EXPORT BUTTON */}
-                            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 flex items-center justify-between">
-                                <div>
-                                    <h3 className="font-bold text-blue-900 text-lg">Finalisasi Paket Penawaran</h3>
-                                    <p className="text-xs text-blue-700 mt-1 max-w-2xl">Satukan seluruh persyaratan Administrasi, Kualifikasi, Teknis, dan RAB menjadi struktur folder baku yang siap untuk dienkripsi oleh Apendo / SPSE.</p>
+                                    {/* Kualifikasi */}
+                                    <div className="bg-white rounded-xl border border-slate-200 p-6">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h3 className="font-bold text-slate-800 flex items-center gap-2"><Users size={16} className="text-emerald-500"/> Kualifikasi</h3>
+                                            <span className="px-2 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded">Completed</span>
+                                        </div>
+                                        <div className="space-y-3 text-sm">
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <input type="checkbox" checked readOnly className="w-4 h-4 text-emerald-600 rounded" />
+                                                <span className="text-slate-600 line-through">SBU & NIB Aktif</span>
+                                            </label>
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <input type="checkbox" checked readOnly className="w-4 h-4 text-emerald-600 rounded" />
+                                                <span className="text-slate-600 line-through">Pengalaman Kerja (Pajak)</span>
+                                            </label>
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <input type="checkbox" checked readOnly className="w-4 h-4 text-emerald-600 rounded" />
+                                                <span className="text-slate-600 line-through">Surat Perjanjian KSO</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    {/* Teknis */}
+                                    <div className="bg-white rounded-xl border border-slate-200 p-6">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h3 className="font-bold text-slate-800 flex items-center gap-2"><Layers size={16} className="text-purple-500"/> Teknis</h3>
+                                            <span className="px-2 py-1 bg-amber-50 text-amber-700 text-[10px] font-bold rounded">In Progress</span>
+                                        </div>
+                                        <div className="space-y-3 text-sm">
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <input type="checkbox" checked readOnly className="w-4 h-4 text-emerald-600 rounded" />
+                                                <span className="text-slate-600 line-through">Metode Pelaksanaan</span>
+                                            </label>
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <input type="checkbox" className="w-4 h-4 rounded border-slate-300" />
+                                                <span className="text-slate-700 font-semibold">Jadwal Pelaksanaan (S-Curve)</span>
+                                            </label>
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <input type="checkbox" className="w-4 h-4 rounded border-slate-300" />
+                                                <span className="text-slate-700 font-semibold">Dokumen RKK (Safety)</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    {/* Penawaran Harga */}
+                                    <div className="bg-white rounded-xl border border-slate-200 p-6">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h3 className="font-bold text-slate-800 flex items-center gap-2"><DollarSign size={16} className="text-rose-500"/> Penawaran Harga</h3>
+                                            <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded">Pending</span>
+                                        </div>
+                                        <div className="space-y-3 text-sm">
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <input type="checkbox" className="w-4 h-4 rounded border-slate-300" />
+                                                <span className="text-slate-700 font-semibold">Upload BoQ Awal</span>
+                                            </label>
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <input type="checkbox" className="w-4 h-4 rounded border-slate-300" />
+                                                <span className="text-slate-700 font-semibold">Penyesuaian AHSP 2025</span>
+                                            </label>
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <input type="checkbox" className="w-4 h-4 rounded border-slate-300" />
+                                                <span className="text-slate-700 font-semibold">Injeksi Final ke Excel Apendo</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
                                 </div>
-                                <button disabled className="px-6 py-3 bg-blue-600/50 text-white font-bold rounded-xl flex items-center gap-2 cursor-not-allowed">
-                                    <Download size={18} /> Compile & Unduh ZIP (Terkunci)
-                                </button>
                             </div>
                         </div>
                     )}
                     
-                    {/* ========== TAB: DOKUMEN ADMINISTRASI ========== */}
+{/* ========== TAB: DOKUMEN ADMINISTRASI ========== */}
                     {subTab === 'administrasi' && (
                         <div className="p-6 space-y-6 animate-in fade-in duration-200">
                             {/* Inner Sub-tabs Header */}
@@ -1927,340 +1891,447 @@ export default function Workspace() {
                         </div>
                     )}
 
-                    {/* ========== TAB 2: PERMOHONAN DUKUNGAN ========== */}
-                    {subTab === 'permohonan' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 h-full">
-                            {/* Editor Form */}
-                            <div className="p-6 border-r border-slate-200 space-y-5">
-                                <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                                    <Sparkles size={16} className="text-blue-600" /> Rancangan Permohonan Dukungan Alat/Bahan
-                                </h3>
-
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className={LABEL}>Pilih Rekanan / Supplier Utama</label>
-                                        <select className={SELECT_STYLE + " w-full"} value={selectedSupplier} onChange={e => setSelectedSupplier(e.target.value)}>
-                                            {supplierDirectory.map(s => <option key={s.id} value={s.id}>{s.nama}</option>)}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className={LABEL}>Nomor Surat Permohonan</label>
-                                        <input type="text" className={INPUT_STYLE + " w-full"} value={requestLetterNo} onChange={e => setRequestLetterNo(e.target.value)} />
-                                    </div>
-                                    <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1">
-                                        <div className="font-bold text-slate-700">Variabel Tender Tersemat (Otomatis):</div>
-                                        <div className="text-slate-500">Nama Paket: {tenderMeta.namaPaket}</div>
-                                        <div className="text-slate-500">Pokja: {tenderMeta.pokja}</div>
-                                    </div>
-                                </div>
-
-                                <div className="flex gap-2 pt-4 border-t border-slate-100">
-                                    <button className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-all cursor-pointer">
-                                        <Printer size={13} /> Cetak ke Device
-                                    </button>
-                                    <button className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all cursor-pointer">
-                                        <Send size={13} /> Kirim via WA
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Letter Live Preview */}
-                            <div className="p-4 bg-slate-150 flex flex-col">
-                                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
-                                    <span>Pratinjau Dokumen Real-time (A4 Portrait)</span>
-                                    <span className="bg-slate-200 text-slate-700 px-2 py-0.5 rounded text-[8px] font-bold">210mm x 297mm</span>
-                                </div>
-                                <div className="flex-1 overflow-auto border border-slate-200 rounded-xl bg-slate-300/40 p-4 flex justify-center max-h-[500px]">
-                                    <div className="a4-portrait font-mono text-[9px] text-slate-800 whitespace-pre-wrap leading-relaxed shadow-lg overflow-y-auto">
-                                        {requestPreviewText}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ========== TAB 3: RAB & BOQ WORKSPACE ========== */}
+                    {/* ========== TAB 3: ULTIMATE RAB WORKSPACE ========== */}
                     {subTab === 'rab' && (
-                        <div className="p-6 space-y-6">
+                        <div className="flex flex-col h-full bg-slate-50 relative overflow-hidden">
                             
-                            {/* Bidding Strategy Control Panel */}
-                            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-4">
-                                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                                    <Sliders size={14} className="text-indigo-600" /> Panel Strategi Penawaran Harga
-                                </h3>
-                                
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className={LABEL}>Mode Penyesuaian Harga</label>
-                                        <select 
-                                            className={SELECT_STYLE + " w-full"} 
-                                            value={pricingStrategy} 
-                                            onChange={e => setPricingStrategy(e.target.value)}
-                                        >
-                                            <option value="original">Sesuai HSD & AHSP Asli</option>
-                                            <option value="percent">Penurunan Persentase HPS</option>
-                                            <option value="nominal">Kunci Target Nominal Eksak</option>
-                                        </select>
-                                    </div>
-
-                                    {pricingStrategy === 'percent' && (
-                                        <div className="space-y-1.5">
-                                            <label className={LABEL}>Persentase Penurunan (%)</label>
-                                            <div className="flex items-center gap-2">
-                                                <input 
-                                                    type="number" 
-                                                    className={INPUT_STYLE + " w-20"} 
-                                                    value={targetPercentage} 
-                                                    onChange={e => setTargetPercentage(parseFloat(e.target.value))}
-                                                />
-                                                <span className="text-xs text-slate-500 font-semibold">di bawah HPS</span>
+                            
+                            
+                            {!isBoqUploaded ? (
+                                <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-50 relative overflow-hidden">
+                                    <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-emerald-500 to-indigo-500"></div>
+                                    
+                                    {!isSimulatingAi ? (
+                                        <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl border border-slate-200 p-12 text-center animate-in fade-in zoom-in duration-500 relative">
+                                            
+                                            <div className="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                                <UploadCloud size={48} className="text-indigo-600" />
                                             </div>
-                                        </div>
-                                    )}
-
-                                    {pricingStrategy === 'nominal' && (
-                                        <>
-                                            <div className="space-y-1.5">
-                                                <label className={LABEL}>Target Harga Penawaran (Nominal)</label>
-                                                <input 
-                                                    type="number" 
-                                                    className={INPUT_STYLE + " w-full font-bold"} 
-                                                    value={targetNominal} 
-                                                    onChange={e => setTargetNominal(parseFloat(e.target.value))}
-                                                />
-                                            </div>
-                                            <div className="flex items-center gap-2 pt-6">
-                                                <input 
-                                                    type="checkbox" 
-                                                    id="lumpsum" 
-                                                    className="w-4 h-4 rounded text-blue-600"
-                                                    checked={useLumpsumOverride}
-                                                    onChange={e => setUseLumpsumOverride(e.target.checked)}
-                                                />
-                                                <label htmlFor="lumpsum" className="text-xs font-semibold text-slate-600">Gunakan Selisih via Lumpsum (LS) Override</label>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-
-                                <div className="flex justify-between items-center pt-4 border-t border-slate-200">
-                                    <div className="text-xs text-slate-500">
-                                        Total Penawaran Saat Ini (2 desimal):
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-lg font-black text-indigo-600">
-                                            Rp {getGrandTotal().toLocaleString('id-ID', { minimumFractionDigits: 2 })}
-                                        </div>
-                                        <div className="text-[10px] font-semibold text-slate-400">
-                                            HPS: Rp {tenderMeta.hps.toLocaleString('id-ID', { minimumFractionDigits: 2 })}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Excel tabs */}
-                            <div className="border-b border-slate-200 flex gap-1">
-                                {[
-                                    { id: 'rekap', label: 'Rekapitulasi' },
-                                    { id: 'boq', label: 'Daftar Kuantitas (BOQ)' },
-                                    { id: 'ahsp', label: 'Analisa Satuan (AHSP)' },
-                                    { id: 'upah', label: 'Daftar Upah Pekerja' },
-                                    { id: 'bahan', label: 'Daftar Material' },
-                                    { id: 'alat', label: 'Daftar Alat Utama' },
-                                ].map(tab => (
-                                    <button
-                                        key={tab.id}
-                                        onClick={() => setRabTab(tab.id)}
-                                        className={`px-3 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer
-                                            ${rabTab === tab.id 
-                                                ? 'border-indigo-600 text-indigo-600' 
-                                                : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-                                    >
-                                        {tab.label}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {/* Excel-like sheet render (A4 Landscape Device) */}
-                            <div className="p-4 bg-slate-100 flex flex-col border border-slate-200 rounded-xl">
-                                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
-                                    <span>Pratinjau Lembar Kerja RAB (A4 Landscape)</span>
-                                    <span className="bg-slate-200 text-slate-700 px-2 py-0.5 rounded text-[8px] font-bold">297mm x 210mm</span>
-                                </div>
-                                <div className="overflow-auto bg-slate-300/40 p-4 flex justify-center max-h-[500px] border border-slate-200 rounded-lg w-full">
-                                    <div className="a4-landscape shadow-lg overflow-x-auto">
-                                
-                                {rabTab === 'rekap' && (
-                                    <table className="w-full text-left text-xs">
-                                        <thead>
-                                            <tr className="bg-slate-50 border-b border-slate-200 font-bold text-slate-500">
-                                                <th className="px-4 py-3 w-12 text-center">No</th>
-                                                <th className="px-4 py-3">Uraian Pekerjaan</th>
-                                                <th className="px-4 py-3 text-right">Jumlah Harga (Rupiah)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr className="border-b border-slate-100">
-                                                <td className="px-4 py-3 text-center">I</td>
-                                                <td className="px-4 py-3 font-semibold">Pekerjaan Persiapan & Galian</td>
-                                                <td className="px-4 py-3 text-right font-medium">
-                                                    Rp {getBoqTotal(boqList[0]).toLocaleString('id-ID', { minimumFractionDigits: 2 })}
-                                                </td>
-                                            </tr>
-                                            <tr className="border-b border-slate-100">
-                                                <td className="px-4 py-3 text-center">II</td>
-                                                <td className="px-4 py-3 font-semibold">Pekerjaan Beton Utama</td>
-                                                <td className="px-4 py-3 text-right font-medium">
-                                                    Rp {getBoqTotal(boqList[1]).toLocaleString('id-ID', { minimumFractionDigits: 2 })}
-                                                </td>
-                                            </tr>
-                                            <tr className="border-b border-slate-100">
-                                                <td className="px-4 py-3 text-center">III</td>
-                                                <td className="px-4 py-3 font-semibold">Pekerjaan Lain-lain (LS)</td>
-                                                <td className="px-4 py-3 text-right font-medium">
-                                                    {pricingStrategy === 'nominal' && useLumpsumOverride ? (
-                                                        <span>Rp {(targetNominal - getBoqTotal(boqList[0]) - getBoqTotal(boqList[1])).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
-                                                    ) : (
-                                                        <span>Rp {getBoqTotal(boqList[2]).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                            <tr className="bg-slate-50 font-bold text-slate-800">
-                                                <td className="px-4 py-3"></td>
-                                                <td className="px-4 py-3 text-right">TOTAL PENAWARAN (Pek. I + Pek. II + Pek. III)</td>
-                                                <td className="px-4 py-3 text-right text-indigo-600">
-                                                    Rp {getGrandTotal().toLocaleString('id-ID', { minimumFractionDigits: 2 })}
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                )}
-
-                                {rabTab === 'boq' && (
-                                    <table className="w-full text-left text-xs">
-                                        <thead>
-                                            <tr className="bg-slate-50 border-b border-slate-200 font-bold text-slate-500">
-                                                <th className="px-4 py-3 w-12 text-center">No</th>
-                                                <th className="px-4 py-3">Deskripsi Pekerjaan</th>
-                                                <th className="px-4 py-3 text-center">Volume</th>
-                                                <th className="px-4 py-3 text-center">Satuan</th>
-                                                <th className="px-4 py-3 text-right">Harga Satuan (Rp)</th>
-                                                <th className="px-4 py-3 text-right">Total Harga (Rp)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {boqList.map((item, idx) => (
-                                                <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50/50">
-                                                    <td className="px-4 py-3 text-center">{idx + 1}</td>
-                                                    <td className="px-4 py-3 font-semibold text-slate-800">{item.nama}</td>
-                                                    <td className="px-4 py-3 text-center">{item.vol}</td>
-                                                    <td className="px-4 py-3 text-center">{item.sat}</td>
-                                                    <td className="px-4 py-3 text-right font-medium">
-                                                        Rp {getBoqUnitRate(item).toLocaleString('id-ID', { minimumFractionDigits: 2 })}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-right font-bold text-slate-700">
-                                                        Rp {getBoqTotal(item).toLocaleString('id-ID', { minimumFractionDigits: 2 })}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                )}
-
-                                {rabTab === 'ahsp' && (
-                                    <div className="p-4 space-y-4 bg-slate-50/40">
-                                        {ahspItems.map(ahsp => (
-                                            <div key={ahsp.id} className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <div className="font-bold text-slate-800 text-xs">{ahsp.nama}</div>
-                                                    <div className="text-xs font-bold text-slate-500">Harga Satuan Analisa: Rp {calculateAhspTotal(ahsp).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</div>
+                                            
+                                            <h2 className="text-3xl font-black text-slate-800 mb-4 tracking-tight">Mulai Ultimate RAB</h2>
+                                            <p className="text-slate-500 mb-8 max-w-lg mx-auto">
+                                                Langkah pertama: Tarik dan lepaskan dokumen <b>BoQ Kosong</b> atau <b>RAB Perencanaan</b> yang baru saja Anda unduh dari SPSE/Apendo ke area ini.
+                                            </p>
+                                            
+                                            <div 
+                                                onClick={() => {
+                                                    setIsSimulatingAi(true);
+                                                    setTimeout(() => {
+                                                        setIsSimulatingAi(false);
+                                                        setIsBoqUploaded(true);
+                                                        setRabActiveSheet('hsd');
+                                                    }, 3500);
+                                                }}
+                                                className="border-2 border-dashed border-slate-300 hover:border-indigo-500 bg-slate-50 hover:bg-indigo-50/50 rounded-2xl p-10 cursor-pointer transition-all group"
+                                            >
+                                                <div className="text-indigo-600 font-bold mb-2 group-hover:scale-110 transition-transform">
+                                                    Klik atau Drop File .xlsx / .pdf di sini
                                                 </div>
-                                                <table className="w-full text-left text-[11px] mb-2">
-                                                    <thead>
-                                                        <tr className="border-b border-slate-200 text-slate-400 font-bold">
-                                                            <th className="pb-2">Komponen Pembentuk</th>
-                                                            <th className="pb-2 text-center">Koefisien</th>
-                                                            <th className="pb-2 text-right">Harga Dasar (Rp)</th>
-                                                            <th className="pb-2 text-right">Total (Rp)</th>
+                                                <div className="text-xs text-slate-400">TeamTender AI akan membedah dokumen menjadi 4 lapis.</div>
+                                            </div>
+                                            
+                                            <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-center gap-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                <span className="flex items-center gap-1"><CheckCircle2 size={12} className="text-emerald-500"/> Ekstrak HSD</span>
+                                                <span className="flex items-center gap-1"><CheckCircle2 size={12} className="text-emerald-500"/> Mapping AHSP</span>
+                                                <span className="flex items-center gap-1"><CheckCircle2 size={12} className="text-emerald-500"/> Kunci Volume BoQ</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="max-w-md w-full text-center space-y-6">
+                                            <div className="relative w-32 h-32 mx-auto">
+                                                <div className="absolute inset-0 border-4 border-indigo-200 rounded-full animate-ping"></div>
+                                                <div className="absolute inset-2 border-4 border-indigo-500 rounded-full animate-spin border-t-transparent"></div>
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <Cpu size={32} className="text-indigo-600 animate-pulse" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h3 className="text-xl font-bold text-slate-800 mb-2">Reverse-Engineering BoQ...</h3>
+                                                <p className="text-sm text-slate-500 animate-pulse">Membedah struktur AHSP dan mengekstrak Harga Satuan Dasar berdasarkan Standar PUPR 2025...</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <>
+    {/* Top Navigation Tabs */}
+                            <div className="h-14 bg-white border-b border-slate-300 flex items-center px-4 shrink-0 overflow-x-auto shadow-sm z-10">
+                                <div className="flex items-center space-x-1 h-full py-2">
+                                    {[
+                                        { id: 'hsd', label: 'Harga Satuan Dasar', icon: Database },
+                                        { id: 'ahsp', label: 'AHSP', icon: Calculator },
+                                        { id: 'boq', label: 'BOQ', icon: Table },
+                                        { id: 'rekap', label: 'Rekapitulasi', icon: FileText },
+                                        { id: 'apendo', label: 'Sync Apendo', icon: HardDrive },
+                                    ].map(tab => {
+                                        const Icon = tab.icon;
+                                        const isActive = rabActiveSheet === tab.id;
+                                        return (
+                                            <button
+                                                key={tab.id}
+                                                onClick={() => setRabActiveSheet(tab.id)}
+                                                className={`px-4 h-full rounded-lg flex items-center gap-2 text-xs font-bold transition-all whitespace-nowrap
+                                                    ${isActive 
+                                                        ? 'bg-indigo-600 text-white shadow-md' 
+                                                        : 'text-slate-600 hover:bg-slate-100'}`
+                                                }
+                                            >
+                                                <Icon size={14} className={isActive ? 'text-indigo-200' : 'text-slate-400'}/>
+                                                {tab.label}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+    
+                            {/* Main Content Area */}
+                            <div className="flex-1 overflow-y-auto">
+                                {/* SHEET 1: PONDASI HSD */}
+                                {rabActiveSheet === 'hsd' && (
+                                    <div className="p-6 max-w-5xl mx-auto space-y-6 animate-in fade-in duration-300">
+                                        
+                                        {/* GLOBAL STRATEGY ENGINE PANEL */}
+                                        <div className="bg-indigo-900 rounded-xl shadow-xl overflow-hidden text-white mb-6">
+                                            <div className="px-6 py-4 border-b border-indigo-800 flex justify-between items-center bg-indigo-950/50">
+                                                <h3 className="font-bold flex items-center gap-2"><Zap size={18} className="text-amber-400"/> Global Strategy Engine (Bulk Adjuster)</h3>
+                                                <span className="text-[10px] font-mono px-2 py-1 bg-indigo-800 rounded text-indigo-300">CTRL+SHIFT+G</span>
+                                            </div>
+                                            <div className="p-6 flex flex-col md:flex-row gap-6 items-center">
+                                                <div className="flex-1 space-y-4 w-full">
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="block text-[10px] font-bold text-indigo-300 uppercase mb-2">Target Divisi</label>
+                                                            <select className="w-full bg-indigo-950 border border-indigo-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400">
+                                                                <option>Semua Divisi Pekerjaan</option>
+                                                                <option>I. Persiapan</option>
+                                                                <option>II. Beton Utama</option>
+                                                                <option>III. Arsitektur</option>
+                                                            </select>
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-[10px] font-bold text-indigo-300 uppercase mb-2">Aksi Massal</label>
+                                                            <div className="flex gap-2">
+                                                                <select className="w-2/3 bg-indigo-950 border border-indigo-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400">
+                                                                    <option>Turunkan Harga Material</option>
+                                                                    <option>Naikkan Upah Pekerja</option>
+                                                                    <option>Pangkas Profit Margin</option>
+                                                                </select>
+                                                                <input type="number" defaultValue={5} className="w-1/3 bg-indigo-950 border border-indigo-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400 text-center" />
+                                                                <span className="flex items-center text-indigo-400 font-bold">%</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="shrink-0 flex items-center justify-center">
+                                                    <button className="h-full px-6 py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black rounded-xl transition-all shadow-lg hover:shadow-emerald-500/50 flex flex-col items-center gap-1">
+                                                        <Sparkles size={20} />
+                                                        <span>Eksekusi ke</span>
+                                                        <span className="text-xs">1,245 Item</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                                            <div className="flex justify-between items-center mb-6">
+                                                <div>
+                                                    <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                                                        <Database className="text-indigo-600" size={20}/> Harga Satuan Dasar (HSD)
+                                                    </h3>
+                                                    <p className="text-xs text-slate-500">Ubah harga material lokal di sini. Perubahan akan merambat ke seluruh AHSP.</p>
+                                                </div>
+                                                <div className="px-3 py-1 bg-emerald-50 text-emerald-700 font-bold text-[10px] rounded-lg border border-emerald-200 uppercase">
+                                                    Standard PUPR 2025 Compliant
+                                                </div>
+                                            </div>
+                                            
+                                            <table className="w-full text-left text-xs border-collapse">
+                                                <thead>
+                                                    <tr className="bg-slate-50 border-y border-slate-200 text-slate-600">
+                                                        <th className="py-3 px-4 font-bold w-16 text-center">Kode</th>
+                                                        <th className="py-3 px-4 font-bold">Uraian Bahan/Upah</th>
+                                                        <th className="py-3 px-4 font-bold w-20 text-center">Sat</th>
+                                                        <th className="py-3 px-4 font-bold w-48 text-right">Harga Satuan Dasar (Rp)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-100">
+                                                    {[
+                                                        { code: 'L.01', name: 'Pekerja', sat: 'OH', price: 120000 },
+                                                        { code: 'L.02', name: 'Tukang Batu', sat: 'OH', price: 150000 },
+                                                        { code: 'M.14', name: 'Semen Portland (Gresik)', sat: 'kg', price: 1250 },
+                                                        { code: 'M.44', name: 'Pasir Beton (Cepu)', sat: 'm3', price: 275000 },
+                                                        { code: 'M.17', name: 'Besi Beton Polos', sat: 'kg', price: 14500 },
+                                                        { code: 'E.05', name: 'Sewa Concrete Mixer 0.3 m3', sat: 'Sewa/Hari', price: 450000 }
+                                                    ].map((item, idx) => (
+                                                        <tr key={idx} className="hover:bg-slate-50 transition-colors group">
+                                                            <td className="py-2.5 px-4 text-center font-mono text-slate-400">{item.code}</td>
+                                                            <td className="py-2.5 px-4 font-semibold text-slate-700">{item.name}</td>
+                                                            <td className="py-2.5 px-4 text-center text-slate-500">{item.sat}</td>
+                                                            <td className="py-2.5 px-4">
+                                                                <input 
+                                                                    type="number" 
+                                                                    defaultValue={item.price}
+                                                                    className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 text-right font-bold text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 group-hover:border-indigo-300"
+                                                                />
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* SHEET 2: BEDAH AHSP */}
+                                {rabActiveSheet === 'ahsp' && (
+                                    <div className="p-6 max-w-5xl mx-auto space-y-6 animate-in fade-in duration-300">
+                                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 relative overflow-hidden">
+                                            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -z-10 opacity-50"></div>
+                                            
+                                            <div className="flex justify-between items-start mb-6">
+                                                <div>
+                                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Analisa Harga Satuan Pekerjaan (AHSP)</div>
+                                                    <h3 className="text-xl font-black text-slate-800 flex items-center gap-2 mb-2">
+                                                        <Calculator className="text-indigo-600" size={24}/> Pembuatan 1 m3 Beton K-250
+                                                    </h3>
+                                                    <div className="flex gap-2">
+                                                        <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-bold">Kode: 2.2.1.6.1.c</span>
+                                                        <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded text-[10px] font-bold">SNI 2025</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Profit Slider */}
+                                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 w-64">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <label className="text-[10px] font-bold text-slate-600 uppercase">Overhead & Profit (%)</label>
+                                                        <span className="text-sm font-black text-indigo-700">{profitMargin}%</span>
+                                                    </div>
+                                                    <input 
+                                                        type="range" min="0" max="15" step="1"
+                                                        value={profitMargin}
+                                                        onChange={e => setProfitMargin(e.target.value)}
+                                                        className="w-full accent-indigo-600 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                                    />
+                                                    <div className="text-[9px] text-slate-400 mt-2 text-center">Geser ke 0% untuk Mode Klarifikasi Kewajaran</div>
+                                                </div>
+                                            </div>
+
+                                            <div className="border border-slate-200 rounded-lg overflow-hidden mb-6">
+                                                <table className="w-full text-left text-xs">
+                                                    <thead className="bg-slate-100 border-b border-slate-200 text-slate-600">
+                                                        <tr>
+                                                            <th className="p-3 font-bold">Komponen</th>
+                                                            <th className="p-3 font-bold text-center">Sat</th>
+                                                            <th className="p-3 font-bold text-right">Koefisien</th>
+                                                            <th className="p-3 font-bold text-right">Harga Dasar (Rp)</th>
+                                                            <th className="p-3 font-bold text-right">Jumlah Harga (Rp)</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody>
-                                                        {ahsp.upah.map(u => (
-                                                            <tr key={u.item} className="border-b border-slate-100">
-                                                                <td className="py-1.5 text-slate-600">Pekerja: {upahList.find(x => x.id === u.item)?.nama}</td>
-                                                                <td className="py-1.5 text-center">{u.koef}</td>
-                                                                <td className="py-1.5 text-right">Rp {getBasePrice('upah', u.item).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td>
-                                                                <td className="py-1.5 text-right font-medium">Rp {(u.koef * getBasePrice('upah', u.item)).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td>
-                                                            </tr>
-                                                        ))}
-                                                        {ahsp.bahan.map(b => (
-                                                            <tr key={b.item} className="border-b border-slate-100">
-                                                                <td className="py-1.5 text-slate-600">Bahan: {bahanList.find(x => x.id === b.item)?.nama}</td>
-                                                                <td className="py-1.5 text-center">{b.koef}</td>
-                                                                <td className="py-1.5 text-right">Rp {getBasePrice('bahan', b.item).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td>
-                                                                <td className="py-1.5 text-right font-medium">Rp {(b.koef * getBasePrice('bahan', b.item)).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td>
-                                                            </tr>
-                                                        ))}
-                                                        {ahsp.alat.map(e => (
-                                                            <tr key={e.item} className="border-b border-slate-100">
-                                                                <td className="py-1.5 text-slate-600">Alat: {alatList.find(x => x.id === e.item)?.nama}</td>
-                                                                <td className="py-1.5 text-center">{e.koef}</td>
-                                                                <td className="py-1.5 text-right">Rp {getBasePrice('alat', e.item).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td>
-                                                                <td className="py-1.5 text-right font-medium">Rp {(e.koef * getBasePrice('alat', e.item)).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td>
+                                                    <tbody className="divide-y divide-slate-100">
+                                                        <tr><td colSpan="5" className="px-3 py-1.5 bg-slate-50 font-bold text-[10px] text-slate-500 uppercase">A. Tenaga</td></tr>
+                                                        <tr className="hover:bg-slate-50">
+                                                            <td className="p-3 pl-6 font-medium text-slate-700">Pekerja</td>
+                                                            <td className="p-3 text-center text-slate-500">OH</td>
+                                                            <td className="p-3 text-right">1.6500</td>
+                                                            <td className="p-3 text-right">120,000</td>
+                                                            <td className="p-3 text-right font-semibold text-slate-800">198,000</td>
+                                                        </tr>
+                                                        <tr className="hover:bg-slate-50">
+                                                            <td className="p-3 pl-6 font-medium text-slate-700">Tukang Batu</td>
+                                                            <td className="p-3 text-center text-slate-500">OH</td>
+                                                            <td className="p-3 text-right">0.2750</td>
+                                                            <td className="p-3 text-right">150,000</td>
+                                                            <td className="p-3 text-right font-semibold text-slate-800">41,250</td>
+                                                        </tr>
+                                                        
+                                                        <tr><td colSpan="5" className="px-3 py-1.5 bg-slate-50 font-bold text-[10px] text-slate-500 uppercase">B. Bahan</td></tr>
+                                                        <tr className="hover:bg-slate-50">
+                                                            <td className="p-3 pl-6 font-medium text-slate-700">Semen Portland</td>
+                                                            <td className="p-3 text-center text-slate-500">Kg</td>
+                                                            <td className="p-3 text-right">384.0000</td>
+                                                            <td className="p-3 text-right">1,250</td>
+                                                            <td className="p-3 text-right font-semibold text-slate-800">480,000</td>
+                                                        </tr>
+                                                        <tr className="hover:bg-slate-50">
+                                                            <td className="p-3 pl-6 font-medium text-slate-700">Pasir Beton</td>
+                                                            <td className="p-3 text-center text-slate-500">m3</td>
+                                                            <td className="p-3 text-right">0.4940</td>
+                                                            <td className="p-3 text-right">275,000</td>
+                                                            <td className="p-3 text-right font-semibold text-slate-800">135,850</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <div className="flex justify-end">
+                                                <div className="w-80 space-y-2 text-sm">
+                                                    <div className="flex justify-between text-slate-600">
+                                                        <span>Sub Total (A + B + C)</span>
+                                                        <span className="font-semibold">Rp 855,100</span>
+                                                    </div>
+                                                    <div className="flex justify-between text-indigo-600 font-semibold border-b border-slate-200 pb-2">
+                                                        <span>Overhead & Profit ({profitMargin}%)</span>
+                                                        <span>Rp {(855100 * profitMargin / 100).toLocaleString('id-ID')}</span>
+                                                    </div>
+                                                    <div className="flex justify-between text-slate-900 font-black text-lg pt-1">
+                                                        <span>Harga Satuan (D + E)</span>
+                                                        <span>Rp {(855100 + (855100 * profitMargin / 100)).toLocaleString('id-ID')}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* SHEET 3: BoQ (BILL OF QUANTITIES) */}
+                                {rabActiveSheet === 'boq' && (
+                                    <div className="p-6 max-w-6xl mx-auto space-y-6 animate-in fade-in duration-300">
+                                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[70vh]">
+                                            <div className="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                                                <div>
+                                                    <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                                                        <Table className="text-indigo-600" size={20}/> Bill of Quantity (BoQ)
+                                                    </h3>
+                                                    <p className="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                                                        <Lock size={12} className="text-amber-500"/> Volume terkunci untuk menghindari kesalahan Koreksi Aritmatik (Pasal 28.3).
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex-1 overflow-auto">
+                                                <table className="w-full text-left text-[11px] whitespace-nowrap">
+                                                    <thead className="bg-slate-100 border-b border-slate-200 text-slate-600 sticky top-0 z-10 shadow-sm">
+                                                        <tr>
+                                                            <th className="py-3 px-4 font-bold text-center w-12">No</th>
+                                                            <th className="py-3 px-4 font-bold">Uraian Pekerjaan</th>
+                                                            <th className="py-3 px-4 font-bold text-center">Sat</th>
+                                                            <th className="py-3 px-4 font-bold text-right bg-amber-50 text-amber-800 border-l border-amber-100" title="Terkunci">Vol 🔒</th>
+                                                            <th className="py-3 px-4 font-bold text-right w-40 border-l border-slate-200">Harga Satuan (Rp)</th>
+                                                            <th className="py-3 px-4 font-bold text-right w-40">Total (Rp)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-slate-100">
+                                                        <tr className="bg-slate-50"><td colSpan="6" className="py-2 px-4 font-black text-xs text-slate-800">II. PEKERJAAN BETON UTAMA</td></tr>
+                                                        {[
+                                                            { no: '2.1', name: 'Beton K-250 (Ready Mix)', sat: 'm3', vol: 120.50, price: 1150000 },
+                                                            { no: '2.2', name: 'Pembesian dengan Besi Polos', sat: 'Kg', vol: 8500.00, price: 18750 },
+                                                            { no: '2.3', name: 'Bekisting Kayu Klas III', sat: 'm2', vol: 450.00, price: 110000 }
+                                                        ].map((item, idx) => (
+                                                            <tr key={idx} className="hover:bg-slate-50">
+                                                                <td className="py-2.5 px-4 text-center text-slate-400">{item.no}</td>
+                                                                <td className="py-2.5 px-4 font-semibold text-slate-700 truncate max-w-[200px]">{item.name}</td>
+                                                                <td className="py-2.5 px-4 text-center text-slate-500">{item.sat}</td>
+                                                                <td className="py-2.5 px-4 text-right font-mono font-bold text-amber-700 bg-amber-50/30 border-l border-amber-50">{item.vol.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                                                                <td className="py-2.5 px-4 border-l border-slate-100">
+                                                                    <input 
+                                                                        type="number" 
+                                                                        defaultValue={item.price}
+                                                                        className="w-full bg-white border border-slate-200 rounded px-2 py-1 text-right font-bold text-indigo-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                                                                    />
+                                                                </td>
+                                                                <td className="py-2.5 px-4 text-right font-black text-slate-800 bg-slate-50/50">
+                                                                    {(item.vol * item.price).toLocaleString('id-ID')}
+                                                                </td>
                                                             </tr>
                                                         ))}
                                                     </tbody>
                                                 </table>
                                             </div>
-                                        ))}
+                                        </div>
                                     </div>
                                 )}
 
-                                {(rabTab === 'upah' || rabTab === 'bahan' || rabTab === 'alat') && (
-                                    <table className="w-full text-left text-xs">
-                                        <thead>
-                                            <tr className="bg-slate-50 border-b border-slate-200 font-bold text-slate-500">
-                                                <th className="px-4 py-3">Nama Item</th>
-                                                <th className="px-4 py-3 text-right">Harga Dasar (Rupiah)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {(rabTab === 'upah' ? upahList : rabTab === 'bahan' ? bahanList : alatList).map(item => (
-                                                <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50/50">
-                                                    <td className="px-4 py-3 font-semibold text-slate-800">{item.nama}</td>
-                                                    <td className="px-4 py-3 text-right font-extrabold text-slate-700">
-                                                        Rp {item.harga.toLocaleString('id-ID', { minimumFractionDigits: 2 })}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                {/* SHEET 4: REKAPITULASI */}
+                                {rabActiveSheet === 'rekap' && (
+                                    <div className="p-6 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
+                                        
+                                        {/* Survival Mode 80% Indicator */}
+                                        <div className="bg-slate-800 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden flex items-center justify-between">
+                                            <div className="absolute -right-10 -top-10 opacity-10">
+                                                <TrendingDown size={150} />
+                                            </div>
+                                            <div className="relative z-10">
+                                                <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest mb-1">Total Penawaran Final (Dibulatkan)</h3>
+                                                <div className="text-4xl font-black tracking-tight text-emerald-400 mb-2">Rp 11.500.000.000</div>
+                                                <div className="flex gap-4 items-center">
+                                                    <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-bold rounded-full">92.5% dari HPS (Aman)</span>
+                                                    <span className="text-[10px] text-slate-400">Ambang Batas Klarifikasi Kewajaran: Rp 9.940.000.000 (80%)</span>
+                                                </div>
+                                            </div>
+                                            {/* Action Buttons for Survival Mode */}
+                                            <div className="relative z-10 flex flex-col gap-2">
+                                                <button className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold rounded-lg border border-slate-600 transition-colors flex items-center justify-center gap-2">
+                                                    <FileDown size={14}/> Cetak PDF Klarifikasi (Profit 0%)
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        
+                                    </div>
                                 )}
+                                
+                                {/* SHEET 5: SYNC APENDO */}
+                                {rabActiveSheet === 'apendo' && (
+                                    <div className="p-6 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
+                                        {/* Apendo Injector Module */}
+    
+                                        <div className="bg-white rounded-2xl border-2 border-indigo-100 shadow-sm p-8 text-center space-y-6 relative">
+                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-md flex items-center gap-1.5">
+                                                <HardDrive size={12}/> The Apendo Injector
+                                            </div>
+                                            
+                                            <div className="max-w-lg mx-auto">
+                                                <h2 className="text-2xl font-black text-slate-800 mb-3 mt-2">Suntikkan Harga ke File Apendo</h2>
+                                                <p className="text-sm text-slate-500 leading-relaxed">
+                                                    Unggah Template Excel kosong yang baru saja Anda <i>download</i> dari aplikasi <b>Apendo versi 5</b>. Sistem akan menginjeksi Harga Satuan final secara otomatis tanpa mengubah nama *file* maupun <i>formatting</i> bawaan LKPP.
+                                                </p>
+                                            </div>
+
+                                            {!isApendoSyncing ? (
+                                                <div 
+                                                    onClick={() => {
+                                                        setIsApendoSyncing(true);
+                                                        setTimeout(() => setIsApendoSyncing(false), 3000);
+                                                    }}
+                                                    className="w-full max-w-md mx-auto p-8 border-2 border-dashed border-indigo-300 rounded-2xl cursor-pointer hover:bg-indigo-50/50 hover:border-indigo-500 transition-all group"
+                                                >
+                                                    <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                                        <FileSpreadsheet size={28} className="text-indigo-600" />
+                                                    </div>
+                                                    <div className="text-sm font-bold text-slate-700 mb-1">Unggah Template Apendo (.xlsx)</div>
+                                                    <div className="text-[10px] font-mono text-slate-400">Contoh: 8369999-14300999... .xlsx</div>
+                                                </div>
+                                            ) : (
+                                                <div className="w-full max-w-md mx-auto p-8 bg-slate-900 rounded-2xl text-white">
+                                                    <Calculator size={32} className="mx-auto text-emerald-400 mb-4 animate-bounce" />
+                                                    <h3 className="font-bold text-lg mb-2">Menginjeksi Harga Satuan...</h3>
+                                                    <p className="text-xs text-slate-400 mb-4">Mempertahankan formatting cell dan formula Excel asli...</p>
+                                                    <div className="w-full bg-slate-800 rounded-full h-2 mb-2 overflow-hidden">
+                                                        <div className="bg-emerald-500 h-2 rounded-full w-full animate-[progress_3s_ease-in-out]"></div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-left flex gap-3 text-amber-800 items-start">
+                                                <AlertTriangle size={16} className="shrink-0 mt-0.5 text-amber-600"/>
+                                                <p className="text-[11px] leading-relaxed">
+                                                    <b>PENTING:</b> Pastikan nama file yang Anda unduh nanti <b>TIDAK DIUBAH</b> saat melakukan proses enkripsi (Lakukan Enkripsi) di dalam aplikasi Apendo desktop Anda.
+                                                </p>
+                                            </div>
+                                        </div>
+
                                     </div>
-                                </div>
+                                )}
                             </div>
 
-                            {/* SPSE Integration Action */}
-                            <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center justify-between">
-                                <div className="text-xs text-indigo-700">
-                                    <div className="font-bold flex items-center gap-1">
-                                        <CheckCircle2 size={14} /> Pengisian Balik ke Template SPSE Excel
-                                    </div>
-                                    <div className="opacity-90">Pindahkan semua harga satuan ke template resmi SPSE Excel untuk keandalan angka upload.</div>
-                                </div>
-                                <button 
-                                    onClick={handleSpseFillBack} 
-                                    disabled={isSpseFilling} 
-                                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-all shadow-sm cursor-pointer disabled:opacity-50"
-                                >
-                                    {isSpseFilling ? 'Menghitung & Memindahkan...' : isSpseFilled ? 'Telah Diisi (100% Cocok)' : 'Koneksikan & Isi Template'}
-                                </button>
-                            </div>
+                                                        
 
+                                </>
+                            )}
                         </div>
                     )}
-
-                    {/* ========== TAB 4: RKK & RMPK WORKSPACE ========== */}
+                    
+                    {/* ========== TAB 4: RKK & RMPK WORKSPACE ========== */}{/* ========== TAB 4: RKK & RMPK WORKSPACE ========== */}{/* ========== TAB 4: RKK & RMPK WORKSPACE ========== */}
                     
                     {/* ========== TAB X: TEKNIS WORKSPACE ========== */}
                     {subTab === 'teknis' && (

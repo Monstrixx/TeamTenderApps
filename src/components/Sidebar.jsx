@@ -1,10 +1,11 @@
-import { Home, Building2, PlusCircle, Activity, Settings, HelpCircle, Users, Archive } from 'lucide-react';
+import { Home, Building2, PlusCircle, Activity, Settings, HelpCircle, Users, Archive, FileText } from 'lucide-react';
 
 export default function Sidebar({ activeRoute, setActiveRoute }) {
   const menuItems = [
     { id: 'dashboard', icon: Home, label: 'Dashboard' },
     { id: 'profil', icon: Building2, label: 'Profil Perusahaan' },
-    { id: 'mitra-kso', icon: Users, label: 'Mitra KSO' },
+    { id: 'direktori-relasi', icon: Users, label: 'Vendor Hub' },
+    { id: 'surat', icon: FileText, label: 'Surat Menyurat' },
   ];
 
   const tenderItems = [

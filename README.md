@@ -1,16 +1,28 @@
-# React + Vite
+# TeamTender Enterprise Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+TeamTender is an AI-assisted B2B Trust Center & Construction Tender Management Platform.
 
-Currently, two official plugins are available:
+## Modernization Program Documentation
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+For detailed architectural governance, software inventory, domain analysis, and dependency audits, please refer to the documentation in `docs/modernization/`:
 
-## React Compiler
+1. [01-engineering-governance.md](docs/modernization/01-engineering-governance.md) - Engineering Governance Directives
+2. [02-master-plan.md](docs/modernization/02-master-plan.md) - Modernization Master Plan
+3. [05-software-inventory.md](docs/modernization/05-software-inventory.md) - Enterprise Software Inventory
+4. [06-technical-architecture-assessment.md](docs/modernization/06-technical-architecture-assessment.md) - Technical Architecture Assessment
+5. [07-workspace-domain-analysis.md](docs/modernization/07-workspace-domain-analysis.md) - Workspace Domain Discovery & Analysis
+6. [08-workspace-dependency-audit.md](docs/modernization/08-workspace-dependency-audit.md) - Workspace Domain Dependency Audit & Component Topology
+7. [CHANGELOG.md](docs/modernization/CHANGELOG.md) - Architectural Release History
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Development
 
-## Expanding the Oxlint configuration
+```bash
+# Install dependencies
+npm install
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+# Run development server
+npm run dev
+
+# Run production build
+npm run build
+```

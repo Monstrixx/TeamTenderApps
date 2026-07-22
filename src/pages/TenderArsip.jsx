@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
-    Archive, FileText, Download, ShieldAlert, Cpu, Send, Printer, 
-    ChevronRight, CheckCircle2, AlertTriangle, FileSignature, HelpCircle,
-    Calendar, Clock, Check, RefreshCw, BarChart3, Award, FileSpreadsheet,
+    Archive, FileText, Download, ShieldAlert, Printer, 
+    CheckCircle2, AlertTriangle,
+    Calendar, Clock, Check, RefreshCw, BarChart3, Award,
     ExternalLink
 } from 'lucide-react';
 

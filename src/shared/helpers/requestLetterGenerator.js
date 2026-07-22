@@ -3,38 +3,62 @@
  * Pure function - No React, No DOM, No API side-effects.
  * 
  * @param {Object} params
- * @param {string} params.supplierName - Name of target supplier
- * @param {string} params.requestLetterNo - Official request letter number
- * @param {string} [params.pokja] - Selection committee name
+ * @param {Object} params.supplier
+ * @param {string} params.supplier.name - Name of target supplier
+ * @param {Object} params.tender
+ * @param {string} params.tender.packageName - Name of the tender package
+ * @param {string} params.tender.hpsValue - HPS value formatted string
+ * @param {string} params.tender.pokjaName - Selection committee name
+ * @param {string} params.tender.pokjaAddress - Selection committee address
+ * @param {Object} params.company
+ * @param {string} params.company.name - Company name
+ * @param {string} params.company.requestLetterNo - Official request letter number
+ * @param {string} params.company.date - Date of the letter
+ * @param {Object} params.signatory
+ * @param {string} params.signatory.name - Name of the signatory
+ * @param {string} params.signatory.title - Title of the signatory
+ * @param {Array<Object>} params.equipment
+ * @param {string} params.equipment[].name - Equipment name
+ * @param {number} params.equipment[].quantity - Equipment quantity
+ * @param {string} params.equipment[].unit - Equipment unit
  * @returns {string} Formatted request letter body text
  */
-export function generateRequestLetterText({ supplierName, requestLetterNo, pokja = 'Pokja Pemilihan Kab. Rembang' }) {
-    if (!supplierName) return '';
+export function generateRequestLetterText({ 
+    supplier, 
+    tender, 
+    company, 
+    signatory, 
+    equipment 
+}) {
+    if (!supplier?.name || !company?.name) return '';
+
+    const equipmentListText = Array.isArray(equipment) && equipment.length > 0
+        ? equipment.map((item, index) => `${index + 1}. ${item.name || ''} (${item.quantity || 0} ${item.unit || ''})`).join('\n')
+        : '-';
 
     return (
         `KOP SURAT PERUSAHAAN\n` +
-        `PT. MAJU KONSTRUKSI\n` +
+        `${company.name.toUpperCase()}\n` +
         `=============================================================\n\n` +
-        `Nomor   : ${requestLetterNo}\n` +
+        `Nomor   : ${company.requestLetterNo || ''}\n` +
         `Lampiran: 1 (Satu) Berkas\n` +
         `Hal     : Permohonan Dukungan Sewa Peralatan Utama\n\n` +
         `Kepada Yth.\n` +
-        `Pimpinan ${supplierName}\n` +
+        `Pimpinan ${supplier.name}\n` +
         `di Tempat\n\n` +
         `Dengan hormat,\n` +
-        `Sehubungan dengan keikutsertaan kami, PT. Maju Konstruksi, dalam proses pelelangan pekerjaan:\n\n` +
-        `Nama Paket Pekerjaan : Pembangunan Gedung PGRI Rembang\n` +
-        `Nilai HPS            : Rp 2.889.720.000,00\n` +
-        `Pokja Pemilihan      : ${pokja}\n` +
-        `Alamat Pokja         : Bagian PBJ, Setda Kab. Rembang\n\n` +
+        `Sehubungan dengan keikutsertaan kami, ${company.name}, dalam proses pelelangan pekerjaan:\n\n` +
+        `Nama Paket Pekerjaan : ${tender?.packageName || ''}\n` +
+        `Nilai HPS            : ${tender?.hpsValue || ''}\n` +
+        `Pokja Pemilihan      : ${tender?.pokjaName || ''}\n` +
+        `Alamat Pokja         : ${tender?.pokjaAddress || ''}\n\n` +
         `Maka dengan ini kami mengajukan permohonan dukungan sewa peralatan utama berupa:\n` +
-        `1. Dump Truck Kapasitas 4 m³ (2 Unit)\n` +
-        `2. Concrete Mixer Kapasitas 0.3 m³ (1 Unit)\n\n` +
-        `Kami berharap Pihak ${supplierName} dapat menerbitkan Surat Perjanjian Sewa Peralatan spesifik untuk tender tersebut di atas sebagai kelengkapan dokumen teknis kami.\n\n` +
+        `${equipmentListText}\n\n` +
+        `Kami berharap Pihak ${supplier.name} dapat menerbitkan Surat Perjanjian Sewa Peralatan spesifik untuk tender tersebut di atas sebagai kelengkapan dokumen teknis kami.\n\n` +
         `Demikian surat permohonan ini kami sampaikan. Atas perhatian dan kerja samanya kami ucapkan terima kasih.\n\n\n` +
-        `Jakarta, 19 Juli 2026\n` +
-        `PT. Maju Konstruksi,\n\n\n\n\n` +
-        `Ir. Budi Santoso\n` +
-        `Direktur Utama`
+        `${company.date || ''}\n` +
+        `${company.name},\n\n\n\n\n` +
+        `${signatory?.name || ''}\n` +
+        `${signatory?.title || ''}`
     );
 }

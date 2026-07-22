@@ -7,8 +7,8 @@ import {
     Shield, CalendarDays, Users
 } from 'lucide-react';
 import {
-    INPUT_STYLE, SELECT_STYLE, LABEL_STYLE as LABEL,
-    TENDER_METADATA, INITIAL_AI_LOGS, INITIAL_SUPPLIERS,
+    INPUT_STYLE, SELECT_STYLE,
+    TENDER_METADATA, INITIAL_SUPPLIERS,
     INITIAL_PERSONEL_LIST, INITIAL_PERALATAN_LIST, INITIAL_DOC_VALIDATION,
     INITIAL_KSO_PARTNERS, INITIAL_UPAH_LIST, INITIAL_BAHAN_LIST, INITIAL_ALAT_LIST,
     INITIAL_AHSP_ITEMS, INITIAL_BOQ_LIST
@@ -23,8 +23,6 @@ import {
 import { generateRequestLetterText } from '../shared/helpers/requestLetterGenerator';
 import { markDocumentValidating, markDocumentValid, createValidationLog } from '../engines/validation/documentValidationEngine';
 import { getAvailableMenus } from '../containers/WorkspaceContainer';
-import { AiLogPanel } from '../modules/workspace/ai/components';
-import { SuratSection } from '../modules/workspace/surat/components';
 import { PersonilSection } from '../modules/workspace/personil/components';
 import { PeralatanSection } from '../modules/workspace/peralatan/components';
 import { AdministrasiSection } from '../modules/workspace/administrasi/components';
@@ -45,21 +43,16 @@ export default function Workspace() {
     // Supplier Directory for Requests
     const supplierDirectory = INITIAL_SUPPLIERS;
 
-    const [selectedSupplier, setSelectedSupplier] = useState('s1');
-    const [requestLetterNo, setRequestLetterNo] = useState("015/PM-MK/VII/2026");
-    const [requestPreviewText, setRequestPreviewText] = useState("");
+    const [selectedSupplier] = useState('s1');
+    const [requestLetterNo] = useState("015/PM-MK/VII/2026");
 
     // RAB Workspace States
-    const [pricingStrategy, setPricingStrategy] = useState('original'); // 'original' | 'percent' | 'nominal'
+    const [pricingStrategy] = useState('original'); // 'original' | 'percent' | 'nominal'
     const [targetPercentage] = useState(5); // % reduction
     const [targetNominal] = useState(2500000000.00); // Nominal target
     const [useLumpsumOverride] = useState(false);
     const [rabActiveSheet, setRabActiveSheet] = useState('hsd'); // 'hsd' | 'ahsp' | 'boq' | 'rekap'
     const [profitMargin, setProfitMargin] = useState(10); // Default 10%
-    const [rabTotal, setRabTotal] = useState(11500000000); // Dummy HPS
-
-    const [isSpseFilled, setIsSpseFilled] = useState(false);
-    const [isSpseFilling, setIsSpseFilling] = useState(false);
 
     // Persyaratan Kualifikasi & KSO States
     const [kualifikasiSubTab, setKualifikasiSubTab] = useState('validation'); // 'validation' | 'kdskp' | 'spse' | 'kso'
@@ -189,19 +182,6 @@ export default function Workspace() {
 
     // Live calculations based on strategies
     const getGrandTotal = () => calcBoqGrandTotal(boqList, ahspItems, upahList, bahanList, alatList, pricingStrategy, targetPercentage, useLumpsumOverride, targetNominal);
-
-    // Auto-update request letter preview
-    useEffect(() => {
-        const supplier = supplierDirectory.find(s => s.id === selectedSupplier);
-        if (!supplier) return;
-        setRequestPreviewText(
-            generateRequestLetterText({
-                supplierName: supplier.nama,
-                requestLetterNo,
-                pokja: tenderMeta.pokja
-            })
-        );
-    }, [selectedSupplier, requestLetterNo, tenderMeta.pokja, supplierDirectory]);
 
     // RKK & RMPK States
     const [isRkkProcessing, setIsRkkGenerating] = useState(false);

@@ -53,16 +53,8 @@ export default function TenderBaru({ setActiveRoute }) {
     });
 
     const [isDocumentUploaded, setIsDocumentUploaded] = useState(false);
-    const [spseUrl, setSpseUrl] = useState('');
     const [isExtracting, setIsExtracting] = useState(false);
     const [extractionProgress, setExtractionProgress] = useState(0);
-    const [uploadForm, setUploadForm] = useState({
-        name: 'Hibah Barang Pembangunan Gedung PGRI Rembang',
-        hps: '2889720000',
-        idRup: '65000193',
-        pokja: 'Pokja Pemilihan Hibah Barang Gedung PGRI',
-        lokasi: 'Kec. Rembang, Kab. Rembang, Jawa Tengah'
-    });
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [targetSection, setTargetSection] = useState('kualifikasi'); // 'kualifikasi', 'administrasi', 'teknis', 'harga', 'dokumen_lain'
@@ -374,11 +366,11 @@ export default function TenderBaru({ setActiveRoute }) {
 
                     <AccordionSection id="teknis" icon={Settings2} color="bg-emerald-600" title="C. Persyaratan Teknis & RKK" isOpen={openSections.teknis}>
                         <DataTable title="1. Personel Manajerial" headers={['No', 'Jabatan', 'Sertifikat/SKK', 'Pengalaman', 'Ref']} category="personel"
-                            rows={requirementsDB.personel.map((p, i) => ({ id: p.id, cells: [p.jabatan, p.skk, `${p.pengalaman} Tahun`, p.ref] }))} />
+                            rows={requirementsDB.personel.map((p) => ({ id: p.id, cells: [p.jabatan, p.skk, `${p.pengalaman} Tahun`, p.ref] }))} />
                         <DataTable title="2. Peralatan Utama" headers={['No', 'Jenis Alat', 'Kapasitas', 'Jumlah', 'Ref']} category="peralatan"
-                            rows={requirementsDB.peralatan.map((p, i) => ({ id: p.id, cells: [p.jenis, p.kapasitas, `${p.jumlah} Unit`, p.ref] }))} />
+                            rows={requirementsDB.peralatan.map((p) => ({ id: p.id, cells: [p.jenis, p.kapasitas, `${p.jumlah} Unit`, p.ref] }))} />
                         <DataTable title="3. RKK (Rencana Keselamatan Konstruksi)" headers={['No', 'Uraian Pekerjaan', 'Identifikasi Bahaya', 'Ref']} category="rkk"
-                            rows={requirementsDB.rkk.map((r, i) => ({ id: r.id, cells: [r.uraian, r.bahaya, r.ref] }))} />
+                            rows={requirementsDB.rkk.map((r) => ({ id: r.id, cells: [r.uraian, r.bahaya, r.ref] }))} />
                         <div className="px-5 py-3 bg-slate-50 text-xs font-bold text-slate-500 uppercase tracking-wider">Syarat Teknis Lainnya</div>
                         {requirementsDB.teknis_umum.map(item => <ChecklistItem key={item.id} item={item} category="teknis_umum" />)}
                     </AccordionSection>

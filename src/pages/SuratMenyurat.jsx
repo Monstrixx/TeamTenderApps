@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Printer, Send, FileText, CheckCircle2, QrCode, Settings, Type, Edit3, Wand2, User, Search, MapPin, AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline, Shield, Table, Plus, Trash2 } from 'lucide-react';
+import { Sparkles, Printer, Send, FileText, CheckCircle2, QrCode, Settings, Type, Edit3, Wand2, User, Search, MapPin, AlignLeft, Bold, Italic, Underline, Shield, Table, Plus, Trash2 } from 'lucide-react';
 
 const INPUT_STYLE = "px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all";
 const SELECT_STYLE = "px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer";

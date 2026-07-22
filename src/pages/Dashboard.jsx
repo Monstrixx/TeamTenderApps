@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, Folder, Archive, Star, Calendar, ArrowRight, MoreVertical, Edit3 } from 'lucide-react';
+import { Building2, Folder, Archive, Star, Calendar, MoreVertical, Edit3 } from 'lucide-react';
 
 export default function Dashboard({ setActiveRoute }) {
   const stats = [

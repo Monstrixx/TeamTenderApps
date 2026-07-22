@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckCircle2, Printer, Eye, UserCheck, Download, ShieldAlert } from 'lucide-react';
-import { INPUT_STYLE, SELECT_STYLE, LABEL_STYLE as LABEL } from '../../config/fields';
+import { INPUT_STYLE, SELECT_STYLE, LABEL_STYLE as LABEL } from '../../../../data/mock/workspace/fields';
 import { AiLogPanel } from '../../ai/components';
 import { KsoSection } from '../../kso/components';
 

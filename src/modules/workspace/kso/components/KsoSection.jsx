@@ -1,6 +1,6 @@
 import React from 'react';
 import { Printer, Eye, UserCheck } from 'lucide-react';
-import { INPUT_STYLE, SELECT_STYLE, LABEL_STYLE as LABEL } from '../../config/fields';
+import { INPUT_STYLE, SELECT_STYLE, LABEL_STYLE as LABEL } from '../../../../data/mock/workspace/fields';
 
 export default function KsoSection({
     selectedKsoPartnerId = '',

@@ -1,20 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Building2, Folder, Archive, Star, Calendar, MoreVertical, Edit3 } from 'lucide-react';
+import { dashboardStats as stats, activeTenders, agendaItems } from '../data/mock/dashboard';
 
 export default function Dashboard({ setActiveRoute }) {
-  const stats = [
-    { label: 'Tender Aktif', value: '8', desc: 'Sedang dikerjakan', icon: Folder, color: 'text-blue-600', bg: 'bg-blue-50', route: 'tender-aktif' },
-    { label: 'Tender Arsip', value: '15', desc: 'Telah diikuti', icon: Archive, color: 'text-slate-600', bg: 'bg-slate-50', route: 'tender-arsip' },
-    { label: 'Wishlist Tender', value: '23', desc: 'Dalam pantauan', icon: Star, color: 'text-amber-600', bg: 'bg-amber-50', route: 'tender-baru' },
-    { label: 'Jadwal Hari Ini', value: '3', desc: 'Deadline mendekat', icon: Calendar, color: 'text-rose-600', bg: 'bg-rose-50', route: 'tender-aktif' },
-  ];
+  // Prefetch Workspace on idle
+  useEffect(() => {
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(() => {
+        import('./Workspace');
+      });
+    } else {
+      setTimeout(() => import('./Workspace'), 2000);
+    }
+  }, []);
 
-  const activeTenders = [
-    { name: 'Pembangunan Gedung Kantor Dinas Pendidikan', agency: 'Pemerintah Provinsi Jawa Tengah', deadline: '25 Jul 2026', remaining: '10 hari lagi', progress: 65, color: 'bg-blue-600' },
-    { name: 'Peningkatan Jalan Ruas Kota - Kecamatan', agency: 'Pemerintah Kabupaten Bogor', deadline: '28 Jul 2026', remaining: '13 hari lagi', progress: 40, color: 'bg-emerald-500' },
-    { name: 'Rehabilitasi Jaringan Irigasi Desa Sukamaju', agency: 'Kementerian PUPR', deadline: '31 Jul 2026', remaining: '16 hari lagi', progress: 20, color: 'bg-amber-500' },
-    { name: 'Pengadaan Alat Berat Dinas PU', agency: 'Pemerintah Kota Surabaya', deadline: '02 Agu 2026', remaining: '18 hari lagi', progress: 10, color: 'bg-purple-500' },
-  ];
 
   return (
     <div className="w-full space-y-6">
@@ -153,11 +152,7 @@ export default function Dashboard({ setActiveRoute }) {
           </div>
           
           <div className="flex-1 space-y-4">
-            {[
-              { time: '10:00 WIB', title: 'Batas Pemasukan Dokumen', desc: 'Gedung Pendidikan Rembang', date: 'Hari Ini' },
-              { time: '14:00 WIB', title: 'Rapat Penjelasan (Aanwijzing)', desc: 'Rehabilitasi Irigasi Sukamaju', date: 'Besok' },
-              { time: '09:00 WIB', title: 'Pembukaan Dokumen Penawaran', desc: 'Peningkatan Jalan Bogor', date: '19 Jul 2026' }
-            ].map((item, idx) => (
+            {agendaItems.map((item, idx) => (
               <div key={idx} className="flex gap-3 relative pl-4 after:content-[''] after:absolute after:left-1.5 after:top-2 after:bottom-[-20px] after:w-0.5 after:bg-slate-100 last:after:hidden">
                 <div className="absolute left-0.5 top-1.5 w-2.5 h-2.5 rounded-full border-2 border-blue-500 bg-white z-10"></div>
                 <div className="flex-1 min-w-0">

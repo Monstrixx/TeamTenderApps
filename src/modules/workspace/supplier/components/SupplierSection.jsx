@@ -1,6 +1,6 @@
 import React from 'react';
 import { Building2, MapPin, Phone, CheckCircle2 } from 'lucide-react';
-import { SELECT_STYLE, LABEL_STYLE as LABEL } from '../../config/fields';
+import { SELECT_STYLE, LABEL_STYLE as LABEL } from '../../../../data/mock/workspace/fields';
 
 export default function SupplierSection({
     suppliers = [],

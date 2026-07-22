@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { routes, ROUTE_MAP, PATH_TO_ID } from './routes';
+import { PageSkeleton } from '../../components/ui/skeleton';
+
+import { AppErrorBoundary, RouteErrorBoundary } from '../../components/ui/error-boundary';
 
 function RouteWrapper({ Component, isPublic }) {
   const navigate = useNavigate();
@@ -20,7 +23,13 @@ function RouteWrapper({ Component, isPublic }) {
     }
   };
 
-  const pageElement = <Component setActiveRoute={setActiveRoute} />;
+  const pageElement = (
+    <RouteErrorBoundary>
+      <Suspense fallback={<PageSkeleton />}>
+        <Component setActiveRoute={setActiveRoute} />
+      </Suspense>
+    </RouteErrorBoundary>
+  );
 
   if (isPublic) {
     return pageElement;
@@ -35,26 +44,28 @@ function RouteWrapper({ Component, isPublic }) {
 
 export default function AppRouter() {
   return (
-    <div className="font-sans text-slate-800 antialiased h-screen flex flex-col bg-slate-50">
-      <BrowserRouter>
-        <Routes>
-          {routes.map((route, index) => {
-            const Component = route.element;
-            return (
-              <Route
-                key={index}
-                path={route.path}
-                element={<RouteWrapper Component={Component} isPublic={route.isPublic} />}
-              />
-            );
-          })}
-          {/* Catch-all fallback */}
-          <Route
-            path="*"
-            element={<RouteWrapper Component={routes[0].element} isPublic={true} />}
-          />
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <AppErrorBoundary>
+      <div className="font-sans text-slate-800 antialiased h-screen flex flex-col bg-slate-50">
+        <BrowserRouter>
+          <Routes>
+            {routes.map((route, index) => {
+              const Component = route.element;
+              return (
+                <Route
+                  key={index}
+                  path={route.path}
+                  element={<RouteWrapper Component={Component} isPublic={route.isPublic} />}
+                />
+              );
+            })}
+            {/* Catch-all fallback */}
+            <Route
+              path="*"
+              element={<RouteWrapper Component={routes[0].element} isPublic={true} />}
+            />
+          </Routes>
+        </BrowserRouter>
+      </div>
+    </AppErrorBoundary>
   );
 }

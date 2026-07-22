@@ -12,7 +12,7 @@ import {
     INITIAL_PERSONEL_LIST, INITIAL_PERALATAN_LIST, INITIAL_DOC_VALIDATION,
     INITIAL_KSO_PARTNERS, INITIAL_UPAH_LIST, INITIAL_BAHAN_LIST, INITIAL_ALAT_LIST,
     INITIAL_AHSP_ITEMS, INITIAL_BOQ_LIST, INITIAL_AI_LOGS
-} from '../modules/workspace/config';
+} from '../data/mock/workspace';
 import {
     calculateItemBasePrice,
     calculateAhspItemTotal,
@@ -25,249 +25,53 @@ import { markDocumentValidating, markDocumentValid, createValidationLog } from '
 import { getAvailableMenus } from '../containers/WorkspaceContainer';
 import { PersonilSection } from '../modules/workspace/personil/components';
 import { SuratSection } from '../modules/workspace/surat/components';
-import { PeralatanSection } from '../modules/workspace/peralatan/components';
-import { AdministrasiSection } from '../modules/workspace/administrasi/components';
-import { KualifikasiSection } from '../modules/workspace/kualifikasi/components';
-import { RkkSection } from '../modules/workspace/rkk/components';
-import { AhspSection } from '../modules/workspace/rab/ahsp/components';
-import { BoqSection } from '../modules/workspace/rab/boq/components';
+import { SectionSkeleton } from '../components/ui/skeleton';
+
+const KualifikasiSection = React.lazy(() => import('../modules/workspace/kualifikasi/components').then(module => ({ default: module.KualifikasiSection })));
+const RkkSection = React.lazy(() => import('../modules/workspace/rkk/components').then(module => ({ default: module.RkkSection })));
+const AhspSection = React.lazy(() => import('../modules/workspace/rab/ahsp/components').then(module => ({ default: module.AhspSection })));
+const BoqSection = React.lazy(() => import('../modules/workspace/rab/boq/components').then(module => ({ default: module.BoqSection })));
+const PeralatanSection = React.lazy(() => import('../modules/workspace/peralatan/components').then(module => ({ default: module.PeralatanSection })));
+const AdministrasiSection = React.lazy(() => import('../modules/workspace/administrasi/components').then(module => ({ default: module.AdministrasiSection })));
+
+import { useWorkspace } from '../hooks/workspace/useWorkspace';
+import { SectionErrorBoundary } from '../components/ui/error-boundary';
 
 export default function Workspace() {
-    const [subTab, setSubTab] = useState('overview'); // 'overview' | 'permohonan' | 'rab' | 'rkk' | 'schedule'
+    const workspaceState = useWorkspace();
+    const {
+        subTab, setSubTab,
+        tenderMeta, aiLogs, setAiLogs, supplierDirectory,
+        requestLetterNo, setRequestLetterNo, requestPreviewText, setRequestPreviewText,
+        selectedSupplier, setSelectedSupplier,
+        kualifikasiSubTab, setKualifikasiSubTab, simulatedRole, setSimulatedRole,
+        isKdSkpPrinted, setIsKdSkpPrinted, isFormulirSaved, setIsFormulirSaved,
+        selectedKsoPartnerId, setSelectedKsoPartnerId, ksoModalShare, setKsoModalShare,
+        ksoShareStatus, setKsoShareStatus, ksoPartnersList,
+        teknisSubTab, setTeknisSubTab,
+        personelList, setPersonelList, selectedPersonelId, setSelectedPersonelId,
+        peralatanList, setPeralatanList,
+        rkkMenu, setRkkMenu, isRkkGenerating, rkkProgress, rkkContent,
+        rmpkMenu, setRmpkMenu, isRmpkProcessing, rmpkProgress,
+        docValidation, isValidatingAll,
+        adminSubTab, setAdminSubTab, useApendoLetter, setUseApendoLetter,
+        adminKsoName, setAdminKsoName, adminKsoLeaderShare, setAdminKsoLeaderShare,
+        adminKsoMemberShare, setAdminKsoMemberShare, adminKsoUploadedFile,
+        adminBidBondRequired, setAdminBidBondRequired, adminBidBondPercent, setAdminBidBondPercent,
+        adminBidBondDays, setAdminBidBondDays, adminBidBondIssuer, setAdminBidBondIssuer,
+        adminBidBondRequestDownloaded, setAdminBidBondRequestDownloaded,
+        adminBidBondUploadedFile, adminBidBondAiLogs, adminIsScanningBidBond,
+        upahList, bahanList, alatList, boqList, ahspItems,
+        pricingStrategy, setPricingStrategy, targetPercentage, setTargetPercentage,
+        targetNominal, setTargetNominal, useLumpsumOverride, setUseLumpsumOverride,
+        profitMargin, setProfitMargin, rabActiveSheet, setRabActiveSheet,
+        actions
+    } = workspaceState;
     
-    // Tender Metadata
-    const tenderMeta = TENDER_METADATA;
-
-    // AI Agents Activity Logs
-    const [aiLogs, setAiLogs] = useState(INITIAL_AI_LOGS);
-
-    // Supplier Directory for Requests
-    const supplierDirectory = INITIAL_SUPPLIERS;
-
-    const [selectedSupplier, setSelectedSupplier] = useState('s1');
-    const [requestLetterNo, setRequestLetterNo] = useState("015/PM-MK/VII/2026");
-    const [requestPreviewText, setRequestPreviewText] = useState("");
-
-    // Auto-update request letter preview
-    useEffect(() => {
-        const supplier = supplierDirectory.find(s => s.id === selectedSupplier);
-        if (!supplier) return;
-        setRequestPreviewText(
-            generateRequestLetterText({
-                supplier: { name: supplier.nama },
-                tender: {
-                    packageName: tenderMeta.title,
-                    hpsValue: "Rp 2.889.720.000,00",
-                    pokjaName: tenderMeta.pokja,
-                    pokjaAddress: "Bagian PBJ, Setda Kab. Rembang"
-                },
-                company: {
-                    name: "PT. Maju Konstruksi",
-                    requestLetterNo,
-                    date: "Jakarta, 19 Juli 2026"
-                },
-                signatory: {
-                    name: "Ir. Budi Santoso",
-                    title: "Direktur Utama"
-                },
-                equipment: [
-                    { name: "Dump Truck Kapasitas 4 m³", quantity: 2, unit: "Unit" },
-                    { name: "Concrete Mixer Kapasitas 0.3 m³", quantity: 1, unit: "Unit" }
-                ]
-            })
-        );
-    }, [selectedSupplier, requestLetterNo, tenderMeta.pokja, tenderMeta.title, supplierDirectory]);
-
-    // RAB Workspace States
-    const [pricingStrategy] = useState('original'); // 'original' | 'percent' | 'nominal'
-    const [targetPercentage] = useState(5); // % reduction
-    const [targetNominal] = useState(2500000000.00); // Nominal target
-    const [useLumpsumOverride] = useState(false);
-    const [rabActiveSheet, setRabActiveSheet] = useState('hsd'); // 'hsd' | 'ahsp' | 'boq' | 'rekap'
-    const [profitMargin, setProfitMargin] = useState(10); // Default 10%
-
-    // Persyaratan Kualifikasi & KSO States
-    const [kualifikasiSubTab, setKualifikasiSubTab] = useState('validation'); // 'validation' | 'kdskp' | 'spse' | 'kso'
-    const [selectedKsoPartnerId, setSelectedKsoPartnerId] = useState('');
-    const [ksoModalShare, setKsoModalShare] = useState(0); // 0 means not connected, we sync it from admin document
-    const [ksoShareStatus, setKsoShareStatus] = useState('Unsynced'); // 'Unsynced' | 'Synced'
-    const [simulatedRole, setSimulatedRole] = useState('owner'); // 'owner' | 'estimator' | 'partner'
-    const [isKdSkpPrinted, setIsKdSkpPrinted] = useState(false);
-    const [isFormulirSaved, setIsFormulirSaved] = useState(false);
-
-    // Persyaratan Teknis States
-    const [teknisSubTab, setTeknisSubTab] = useState('personel'); // 'personel' | 'peralatan' | 'rkk' | 'dukungan' | 'jadwal' | 'metode' | 'rmpk'
-
-    // New Teknis States
-    const [personelList] = useState(INITIAL_PERSONEL_LIST);
-    const [selectedPersonelId, setSelectedPersonelId] = useState('p1');
-
-    const [peralatanList] = useState(INITIAL_PERALATAN_LIST);
-
-    // Update RKK Section States to accommodate TOC
-    const [rkkMenu, setRkkMenu] = useState('cover'); // 'cover' | 'pakta' | 'kepemimpinan' | 'ibprp' | 'sasaran' | 'dukungan' | 'operasi' | 'evaluasi'
-
-
-    // Individual document validation states
-    const [docValidation, setDocValidation] = useState(INITIAL_DOC_VALIDATION);
-    const [isValidatingAll, setIsValidatingAll] = useState(false);
-
-    const handleValidateDoc = (key) => {
-        setDocValidation(prev => markDocumentValidating(prev, key));
-        setTimeout(() => {
-            setDocValidation(prev => markDocumentValid(prev, key));
-            setAiLogs(logs => [...logs, createValidationLog(key, false)]);
-        }, 1000);
-    };
-
-    const handleValidateAll = () => {
-        setIsValidatingAll(true);
-        const keys = Object.keys(docValidation);
-        keys.forEach((key, index) => {
-            setTimeout(() => {
-                setDocValidation(prev => markDocumentValidating(prev, key));
-                setTimeout(() => {
-                    setDocValidation(prev => markDocumentValid(prev, key));
-                    setAiLogs(logs => [...logs, createValidationLog(key, true)]);
-                    if (index === keys.length - 1) {
-                        setIsValidatingAll(false);
-                    }
-                }, 800);
-            }, index * 1000);
-        });
-    };
-
-    // Dokumen Administrasi States
-    const [adminSubTab, setAdminSubTab] = useState('penawaran'); // 'penawaran' | 'kso' | 'jaminan'
-    const [useApendoLetter, setUseApendoLetter] = useState(true);
-    const [adminKsoName, setAdminKsoName] = useState('KSO Maju Sinergi');
-    const [adminKsoLeaderShare, setAdminKsoLeaderShare] = useState(60);
-    const [adminKsoMemberShare, setAdminKsoMemberShare] = useState(40);
-    const [adminKsoUploadedFile, setAdminKsoUploadedFile] = useState(null);
-    
-    const [adminBidBondRequired, setAdminBidBondRequired] = useState(false);
-    const [adminBidBondPercent, setAdminBidBondPercent] = useState(2);
-    const [adminBidBondDays, setAdminBidBondDays] = useState(90);
-    const [adminBidBondIssuer, setAdminBidBondIssuer] = useState('PT. Bank Rakyat Indonesia (Persero) Tbk');
-    const [adminBidBondUploadedFile, setAdminBidBondUploadedFile] = useState(null);
-    const [adminBidBondAiLogs, setAdminBidBondAiLogs] = useState([]);
-    const [adminIsScanningBidBond, setAdminIsScanningBidBond] = useState(false);
-
-    const handleUploadKsoFile = (e) => {
-        if(e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setAdminKsoUploadedFile(file.name);
-            setAiLogs(logs => [
-                ...logs,
-                { time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }), agent: "Sistem Penyusunan", msg: `Surat Perjanjian KSO asli (${file.name}) berhasil diunggah.` }
-            ]);
-        }
-    };
-
-    const handleUploadBidBondFile = (e) => {
-        if(e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setAdminBidBondUploadedFile(file.name);
-            setAdminIsScanningBidBond(true);
-            setAdminBidBondAiLogs([
-                { status: 'info', msg: 'Memulai verifikasi otomatis untuk Jaminan Penawaran...' },
-            ]);
-
-            setTimeout(() => {
-                setAdminBidBondAiLogs(prev => [
-                    ...prev,
-                    { status: 'scan', msg: 'Mengekstrak teks scan... OK' },
-                    { status: 'scan', msg: `Mencocokkan penerbit: ${adminBidBondIssuer}... COCOK` },
-                ]);
-                
-                setTimeout(() => {
-                    const expectedNominal = Math.floor(tenderMeta.hps * (adminBidBondPercent / 100));
-                    setAdminBidBondAiLogs(prev => [
-                        ...prev,
-                        { status: 'scan', msg: `Mencocokkan nilai nominal: Rp ${expectedNominal.toLocaleString('id-ID')}... COCOK` },
-                        { status: 'scan', msg: `Mencocokkan masa berlaku: ${adminBidBondDays} hari kalender... COCOK` },
-                        { status: 'success', msg: 'HASIL VERIFIKASI: Dokumen Jaminan Penawaran 100% VALID dan memenuhi syarat LDP!' }
-                    ]);
-                    setAdminIsScanningBidBond(false);
-                    setAiLogs(logs => [
-                        ...logs,
-                        { time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }), agent: "Sistem Validasi", msg: `Jaminan Penawaran (${file.name}) telah diverifikasi dan memenuhi persyaratan.` }
-                    ]);
-                }, 1200);
-            }, 1000);
-        }
-    };
-
-    // KSO Partners directory mock (synced from global list)
-    const ksoPartnersList = INITIAL_KSO_PARTNERS;
-
-    // Default basic prices (Upah, Bahan, Alat)
-    const [upahList] = useState(INITIAL_UPAH_LIST);
-    const [bahanList] = useState(INITIAL_BAHAN_LIST);
-    const [alatList] = useState(INITIAL_ALAT_LIST);
-
-    // AHSP (Analisa Harga Satuan Pekerjaan)
-    const ahspItems = INITIAL_AHSP_ITEMS;
-
-    // Quantities & Base Prices for BOQ
-    const [boqList] = useState(INITIAL_BOQ_LIST);
-
-    // Live calculations based on strategies
-    const getGrandTotal = () => calcBoqGrandTotal(boqList, ahspItems, upahList, bahanList, alatList, pricingStrategy, targetPercentage, useLumpsumOverride, targetNominal);
-
-    // RKK & RMPK States
-    const [isRkkProcessing, setIsRkkGenerating] = useState(false);
-    const [rkkProgress, setRkkProgress] = useState(100);
-    const [rmpkMenu, setRmpkMenu] = useState('cover'); // 'cover'|'bab1'|'bab2'|'bab3'|'bab4'|'bab5'|'bab6'|'bab7'|'bab8'
-    const [isRmpkProcessing, setIsRmpkProcessing] = useState(false);
-    const [rmpkProgress, setRmpkProgress] = useState(0);
-
-    const triggerRmpkGenerate = () => {
-        setIsRmpkProcessing(true);
-        setRmpkProgress(0);
-        let currentProgress = 0;
-        const interval = setInterval(() => {
-            currentProgress += 10;
-            if (currentProgress >= 100) {
-                clearInterval(interval);
-                setIsRmpkProcessing(false);
-                setRmpkProgress(100);
-            } else {
-                setRmpkProgress(currentProgress);
-            }
-        }, 150);
-    };
-    const [rkkContent, setRkkContent] = useState({
-        kebijakan: "PT. Maju Konstruksi berkomitmen penuh untuk menjamin keselamatan kerja karyawan dan seluruh stakeholder di area Pembangunan Gedung PGRI Rembang...",
-        bahaya: [
-            { no: 1, pekerjaan: "Galian Tanah Struktur Gedung", risiko: "Pekerja tertimbun longsoran galian tanah", mitigasi: "Memasang cerucuk bambu/turap penahan tanah di pinggiran galian" },
-            { no: 2, pekerjaan: "Pekerjaan Beton Struktur Utama", risiko: "Pekerja terkena cipratan cairan beton panas atau tertimpa bucket beton", mitigasi: "Wajib menggunakan helm, kacamata pelindung, rompi reflektif, dan menjaga jarak radius putar mixer" }
-        ]
-    });
-
-    const triggerRkkGenerate = () => {
-        setIsRkkGenerating(true);
-        setRkkProgress(0);
-        const interval = setInterval(() => {
-            setRkkProgress(p => {
-                if (p >= 100) {
-                    clearInterval(interval);
-                    setIsRkkGenerating(false);
-                    // Add a new risk identification dynamically based on tender context
-                    setRkkContent(prev => ({
-                        ...prev,
-                        bahaya: [
-                            ...prev.bahaya,
-                            { no: 3, pekerjaan: "Pekerjaan Rangka Atap Baja", risiko: "Jatuh dari ketinggian > 5 meter", mitigasi: "Penyediaan Full Body Harness dengan anchor point yang teruji dan jaring pengaman (safety net)" }
-                        ]
-                    }));
-                    setAiLogs(logs => [...logs, { time: "09:25", agent: "Sistem Penyusunan", msg: "Identifikasi Bahaya RKK diperbarui dengan klausul K3 atap baja." }]);
-                    return 100;
-                }
-                return p + 25;
-            });
-        }, 300);
-    };
+    const { getGrandTotal } = actions || {};
+    const { handleValidateDoc, handleValidateAll } = actions || {};
+    const { triggerRkkGenerate, triggerRmpkGenerate } = actions || {};
+    const { handleUploadKsoFile, handleUploadBidBondFile } = actions || {};
 
     // SPSE Transfer Simulation
     const handleSpseFillBack = () => {
@@ -329,11 +133,13 @@ export default function Workspace() {
                 </div>
 
                 {/* Main Action Board */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[500px]">
-                    
-                    {/* ========== TAB 1: RESUME PERSYARATAN ========== */}
-                    {subTab === 'overview' && (
-                        <div className="flex flex-col h-full bg-slate-50 p-6 overflow-y-auto">
+                <SectionErrorBoundary key={subTab}>
+                    <Suspense fallback={<div className="p-6"><SectionSkeleton /></div>}>
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[500px]">
+                        
+                        {/* ========== TAB 1: RESUME PERSYARATAN ========== */}
+                        {subTab === 'overview' && (
+                            <div className="flex flex-col h-full bg-slate-50 p-6 overflow-y-auto">
                             <div className="max-w-4xl mx-auto w-full space-y-8">
                                 
                                 {/* Overall Progress */}
@@ -1301,6 +1107,8 @@ export default function Workspace() {
 
 
                 </div>
+                </Suspense>
+                </SectionErrorBoundary>
 
             </div>
         </div>

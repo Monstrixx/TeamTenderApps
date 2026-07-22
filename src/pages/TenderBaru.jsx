@@ -4,156 +4,38 @@ import {
     Plus, Info, ChevronDown, Trash2, FolderOutput, 
     FileText, X, Check, FileCheck
 } from 'lucide-react';
+import { useDialogA11y } from '../hooks/ui/useDialogA11y';
 
 const INPUT = "w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400";
 const SELECT = "w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer";
 const LABEL = "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5";
 
+import { requirementsDB as initialRequirementsDB } from '../data/mock/tenderBaru';
+import { useTenderBaru } from '../hooks/tenderBaru/useTenderBaru';
+
+
 export default function TenderBaru({ setActiveRoute }) {
-    const [requirementsDB, setRequirementsDB] = useState({
-        kualifikasi: [
-            { id: "k1", title: "Sertifikat Badan Usaha (SBU)", desc: "Kualifikasi Usaha Kecil. Subklasifikasi: Konstruksi Gedung Perkantoran (BG002)", ref: "LDP Hal 69" },
-            { id: "k2", title: "Kemampuan Dasar (KD)", desc: "Dipersyaratkan bagi Kualifikasi Usaha Menengah dan Besar.", ref: "LDP Hal 69" },
-            { id: "k3", title: "Konfirmasi Status Wajib Pajak (KSWP)", desc: "Mempunyai status valid keterangan Wajib Pajak.", ref: "LDP Hal 70" },
-            { id: "k4", title: "Akta Perusahaan", desc: "Memiliki akta pendirian perusahaan dan akta perubahan (apabila ada).", ref: "LDP Hal 70" },
-            { id: "k5", title: "Sisa Kemampuan Paket (SKP)", desc: "Memenuhi perhitungan Sisa Kemampuan Paket.", ref: "LDP Hal 71" },
-            { id: "k6", title: "Formulir Isian Kualifikasi KSO", desc: "Wajib diisi untuk setiap Anggota KSO (jika ber-KSO).", ref: "LDP Hal 71" }
-        ],
-        administrasi: [
-            { id: "a1", title: "Surat Penawaran", desc: "Sesuai format IKP, masa berlaku penawaran 90 hari kalender.", ref: "LDP Hal 23" },
-            { id: "a2", title: "Jaminan Penawaran", desc: "Wajib untuk nilai HPS > Rp10.000.000.000 atau jika ditetapkan pada dokumen pemilihan.", ref: "LDP Hal 25" },
-            { id: "a3", title: "Surat Perjanjian Kerja Sama Operasi", desc: "Wajib apabila perusahaan ber-KSO.", ref: "LDP Hal 26" }
-        ],
-        harga: [
-            { id: "h1", title: "Daftar Kuantitas dan Harga (BOQ)", desc: "Daftar rincian harga excel harus sesuai spesifikasi.", ref: "IKP 28" }
-        ],
-        teknis_umum: [
-            { id: "tu1", title: "Metode Pelaksanaan", desc: "Metode kerja teknis yang logis dan realistis.", ref: "LDP Hal 66" },
-            { id: "tu2", title: "Rencana Mutu Pelaksanaan Konstruksi (RMPK)", desc: "Rencana mutu kerja pelaksanaan.", ref: "LDP Hal 66" },
-            { id: "tu3", title: "Daftar Pekerjaan Yang Disubkontrakkan", desc: "Rincian pekerjaan yang akan di-subkontrakkan.", ref: "LDP Hal 67" }
-        ],
-        personel: [
-            { id: "p1", jabatan: "Pelaksana Lapangan", skk: "SKK Pelaksana Gedung", pengalaman: 1, ref: "LDP Hal 65" }
-        ],
-        peralatan: [
-            { id: "e1", jenis: "Dump Truck", kapasitas: "4m³", jumlah: 2, ref: "LDP Hal 65" }
-        ],
-        rkk: [
-            { id: "r1", uraian: "Pekerjaan Atap", bahaya: "Terjatuh dari Ketinggian", ref: "LDP Hal 67" }
-        ],
-        dokumen_lain: [
-            { id: "d1", title: "Pakta Integritas", desc: "Dokumen pernyataan integritas penawar.", ref: "IKP 28" },
-            { id: "d2", title: "Surat Pernyataan Tidak Masuk Daftar Hitam", desc: "Pernyataan tidak masuk daftar hitam LKPP.", ref: "IKP 28" },
-            { id: "d3", title: "Surat Pernyataan Kesanggupan Lainnya", desc: "Surat pernyataan lain yang disyaratkan dalam LDP.", ref: "LDP Hal 75" }
-        ]
-    });
-
-    const [openSections, setOpenSections] = useState({
-        kualifikasi: true, administrasi: true, teknis: true, harga: false, dokumen_lain: false
-    });
-
-    const [isDocumentUploaded, setIsDocumentUploaded] = useState(false);
-    const [isExtracting, setIsExtracting] = useState(false);
-    const [extractionProgress, setExtractionProgress] = useState(0);
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [targetSection, setTargetSection] = useState('kualifikasi'); // 'kualifikasi', 'administrasi', 'teknis', 'harga', 'dokumen_lain'
-    const [subType, setSubType] = useState(''); // Teknis: 'personel', 'peralatan', 'rkk', 'umum'
-
-    const [modalForm, setModalForm] = useState({
-        judul: '',
-        desc: '',
-        ref: 'LDP Hal ',
-        // Personel
-        jabatan: '',
-        skk: '',
-        pengalaman: 1,
-        // Peralatan
-        jenisAlat: '',
-        kapasitasAlat: '',
-        jumlahAlat: 1,
-        // RKK
-        uraianPekerjaan: '',
-        identifikasiBahaya: ''
-    });
-
-    const toggle = (key) => setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
-    const deleteItem = (cat, id) => setRequirementsDB(prev => ({ ...prev, [cat]: prev[cat].filter(i => i.id !== id) }));
-    
-    const handleFormChange = (e) => {
-        setModalForm(f => ({ ...f, [e.target.name]: e.target.value }));
-    };
-
-    const startExtraction = (e) => {
-        e.preventDefault();
-        setIsExtracting(true);
-        setExtractionProgress(0);
-        const interval = setInterval(() => {
-            setExtractionProgress(p => {
-                if (p >= 100) {
-                    clearInterval(interval);
-                    setIsExtracting(false);
-                    setIsDocumentUploaded(true);
-                    return 100;
-                }
-                return p + 20;
-            });
-        }, 150);
-    };
-
-    const openModalForSection = (section, e) => {
-        if (e) e.stopPropagation(); // Stop accordion from toggling
-        setTargetSection(section);
-        // Reset subType based on target section
-        if (section === 'teknis') {
-            setSubType('personel');
-        } else {
-            setSubType('');
+    const {
+        requirementsDB, setRequirementsDB,
+        openSections, setOpenSections,
+        isDocumentUploaded, setIsDocumentUploaded,
+        isExtracting, setIsExtracting,
+        extractionProgress, setExtractionProgress,
+        isModalOpen, setIsModalOpen,
+        targetSection, setTargetSection,
+        subType, setSubType,
+        modalForm, setModalForm,
+        actions: {
+            toggle,
+            deleteItem,
+            handleFormChange,
+            startExtraction,
+            openModalForSection,
+            saveRequirement
         }
-        // Set defaults based on section
-        setModalForm({
-            judul: '',
-            desc: '',
-            ref: section === 'kualifikasi' ? 'LDP Hal 69' : section === 'administrasi' ? 'LDP Hal 23' : section === 'teknis' ? 'LDP Hal 65' : section === 'harga' ? 'IKP 28' : 'LDP Hal 75',
-            jabatan: '',
-            skk: '',
-            pengalaman: 1,
-            jenisAlat: '',
-            kapasitasAlat: '',
-            jumlahAlat: 1,
-            uraianPekerjaan: '',
-            identifikasiBahaya: ''
-        });
-        setIsModalOpen(true);
-    };
+    } = useTenderBaru();
 
-    const saveRequirement = () => {
-        const id = "id_" + Date.now();
-        const db = { ...requirementsDB };
-
-        if (targetSection === 'kualifikasi') {
-            db.kualifikasi = [...db.kualifikasi, { id, title: modalForm.judul, desc: modalForm.desc, ref: modalForm.ref }];
-        } else if (targetSection === 'administrasi') {
-            db.administrasi = [...db.administrasi, { id, title: modalForm.judul, desc: modalForm.desc, ref: modalForm.ref }];
-        } else if (targetSection === 'harga') {
-            db.harga = [...db.harga, { id, title: modalForm.judul, desc: modalForm.desc, ref: modalForm.ref }];
-        } else if (targetSection === 'dokumen_lain') {
-            db.dokumen_lain = [...db.dokumen_lain, { id, title: modalForm.judul, desc: modalForm.desc, ref: modalForm.ref }];
-        } else if (targetSection === 'teknis') {
-            if (subType === 'personel') {
-                db.personel = [...db.personel, { id, jabatan: modalForm.jabatan, skk: modalForm.skk, pengalaman: Number(modalForm.pengalaman), ref: modalForm.ref }];
-            } else if (subType === 'peralatan') {
-                db.peralatan = [...db.peralatan, { id, jenis: modalForm.jenisAlat, kapasitas: modalForm.kapasitasAlat, jumlah: Number(modalForm.jumlahAlat), ref: modalForm.ref }];
-            } else if (subType === 'rkk') {
-                db.rkk = [...db.rkk, { id, uraian: modalForm.uraianPekerjaan, bahaya: modalForm.identifikasiBahaya, ref: modalForm.ref }];
-            } else {
-                db.teknis_umum = [...db.teknis_umum, { id, title: modalForm.judul, desc: modalForm.desc, ref: modalForm.ref }];
-            }
-        }
-
-        setRequirementsDB(db);
-        setIsModalOpen(false);
-    };
+    const { dialogRef } = useDialogA11y(isModalOpen, () => setIsModalOpen(false));
 
     const totalReqs = Object.values(requirementsDB).reduce((a, b) => a + b.length, 0);
 
@@ -426,12 +308,20 @@ export default function TenderBaru({ setActiveRoute }) {
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setIsModalOpen(false)}>
                     <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"></div>
-                    <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                    <div 
+                        ref={dialogRef}
+                        tabIndex={-1}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="tender-modal-title"
+                        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 outline-none" 
+                        onClick={e => e.stopPropagation()}
+                    >
                         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                            <h3 className="text-base font-bold text-slate-800">
+                            <h3 id="tender-modal-title" className="text-base font-bold text-slate-800">
                                 Tambah Persyaratan {targetSection === 'dokumen_lain' ? 'Dokumen Lainnya' : targetSection.charAt(0).toUpperCase() + targetSection.slice(1)}
                             </h3>
-                            <button onClick={() => setIsModalOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"><X size={18} /></button>
+                            <button aria-label="Tutup Dialog" onClick={() => setIsModalOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"><X size={18} /></button>
                         </div>
                         <div className="p-6 max-h-[65vh] overflow-y-auto space-y-5">
                             

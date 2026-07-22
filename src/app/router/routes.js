@@ -1,14 +1,17 @@
+import React, { lazy } from 'react';
 import LandingPage from '../../pages/LandingPage';
 import Dashboard from '../../pages/Dashboard';
-import ProfilPerusahaan from '../../pages/ProfilPerusahaan';
-import DirektoriRelasi from '../../pages/DirektoriRelasi';
-import TenderBaru from '../../pages/TenderBaru';
-import TenderAktif from '../../pages/TenderAktif';
-import TenderArsip from '../../pages/TenderArsip';
-import Workspace from '../../pages/Workspace';
-import SuratMenyurat from '../../pages/SuratMenyurat';
-import ValidationPage from '../../pages/ValidationPage';
-import MitraKso from '../../pages/MitraKso';
+
+const ProfilPerusahaan = lazy(() => import('../../pages/ProfilPerusahaan'));
+const DirektoriRelasi = lazy(() => import('../../pages/DirektoriRelasi'));
+const TenderBaru = lazy(() => import('../../pages/TenderBaru'));
+const TenderAktif = lazy(() => import('../../pages/TenderAktif'));
+const TenderArsip = lazy(() => import('../../pages/TenderArsip'));
+const Workspace = lazy(() => import('../../pages/Workspace'));
+const SuratMenyurat = lazy(() => import('../../pages/SuratMenyurat'));
+const ValidationPage = lazy(() => import('../../pages/ValidationPage'));
+const MitraKso = lazy(() => import('../../pages/MitraKso'));
+
 
 export const ROUTE_MAP = {
   'landing': '/',

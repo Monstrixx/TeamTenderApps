@@ -1,6 +1,6 @@
 import React from 'react';
 import { FileText, Download } from 'lucide-react';
-import { INPUT_STYLE, LABEL_STYLE as LABEL } from '../../config/fields';
+import { INPUT_STYLE, LABEL_STYLE as LABEL } from '../../../../data/mock/workspace/fields';
 import { SupplierSection } from '../../supplier/components';
 
 export default function SuratSection({

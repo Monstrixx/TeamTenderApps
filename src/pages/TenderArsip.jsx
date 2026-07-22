@@ -7,14 +7,23 @@ import {
 } from 'lucide-react';
 
 const INPUT_STYLE = "w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400";
+import { useTenderArsip } from '../hooks/tenderArsip/useTenderArsip';
 
 export default function TenderArsip() {
-    const [selectedTender, setSelectedTender] = useState(null);
-    const [activeTab, setActiveTab] = useState('summary'); // 'summary', 'schedule', 'appeal'
-    const [evaluasiInput, setEvaluasiInput] = useState('');
-    const [aiSanggahDraft, setAiSanggahDraft] = useState('');
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [isSyncing, setIsSyncing] = useState(false);
+    const {
+        selectedTender, setSelectedTender,
+        activeTab, setActiveTab,
+        evaluasiInput, setEvaluasiInput,
+        aiSanggahDraft, setAiSanggahDraft,
+        isAnalyzing, setIsAnalyzing,
+        isSyncing, setIsSyncing,
+        archivedTenders, setArchivedTenders,
+        actions: {
+            handleTenderClick,
+            handleSyncSchedule,
+            handleAnalyzeEvaluasi
+        }
+    } = useTenderArsip();
 
     // Demo statistics data
     const stats = [
@@ -23,118 +32,6 @@ export default function TenderArsip() {
         { label: "Gugur & Sanggah", value: "6 Paket", sub: "2 Sanggahan Diterima", icon: ShieldAlert, color: "bg-amber-50 text-amber-600 border-amber-100" },
         { label: "Rasio Kemenangan", value: "57.1%", sub: "Di atas rata-rata industri", icon: CheckCircle2, color: "bg-purple-50 text-purple-600 border-purple-100" },
     ];
-
-    // List of completed / archived tenders
-    const [archivedTenders, setArchivedTenders] = useState([
-        {
-            id: "arch1",
-            name: "Pembangunan Jaringan Irigasi D.I. Kedung Uling",
-            hps: "Rp 4.250.000.000",
-            location: "Kab. Grobogan, Jawa Tengah",
-            date: "18 Juli 2026",
-            status: "Gugur Evaluasi",
-            statusColor: "text-rose-600 bg-rose-50 border-rose-100",
-            spseId: "10150966000",
-            files: [
-                { name: "Rencana Anggaran Biaya (RAB).xlsx", size: "1.4 MB" },
-                { name: "Rencana Keselamatan Konstruksi (RKK).pdf", size: "2.1 MB" },
-                { name: "Surat Permohonan Dukungan Alat.pdf", size: "320 KB" },
-                { name: "Formulir Isian Kualifikasi SPSE.pdf", size: "850 KB" }
-            ],
-            schedules: [
-                { step: "Pengumuman Pasca/Prakualifikasi", date: "15 Juni 2026", status: "completed" },
-                { step: "Download Dokumen Pemilihan", date: "16 Juni - 22 Juni 2026", status: "completed" },
-                { step: "Pemberian Penjelasan (Aanwijzing)", date: "18 Juni 2026", status: "completed" },
-                { step: "Upload Dokumen Penawaran", date: "23 Juni 2026", status: "completed" },
-                { step: "Pembukaan Dokumen Penawaran", date: "24 Juni 2026", status: "completed" },
-                { step: "Evaluasi Dokumen Kualifikasi/Teknis", date: "25 Juni - 10 Juli 2026", status: "completed" },
-                { step: "Pengumuman Pemenang", date: "12 Juli 2026", status: "completed" },
-                { step: "Masa Sanggah", date: "13 Juli - 18 Juli 2026 (Selesai)", status: "completed" },
-                { step: "Surat Penunjukan Penyedia (SPPBJ)", date: "22 Juli 2026", status: "current" },
-                { step: "Penandatanganan Kontrak", date: "28 Juli 2026", status: "upcoming" }
-            ]
-        },
-        {
-            id: "arch2",
-            name: "Pembangunan Gedung Laboratorium Terpadu UNS",
-            hps: "Rp 12.800.000.000",
-            location: "Kota Surakarta, Jawa Tengah",
-            date: "14 Juli 2026",
-            status: "Selesai (Menang)",
-            statusColor: "text-emerald-600 bg-emerald-50 border-emerald-100",
-            spseId: "10239012000",
-            files: [
-                { name: "RAB Penawaran Fix UNS.xlsx", size: "3.2 MB" },
-                { name: "RKK Metode Pelaksanaan UNS.pdf", size: "4.8 MB" },
-                { name: "Dokumen Kualifikasi Lengkap.pdf", size: "1.1 MB" }
-            ],
-            schedules: [
-                { step: "Pengumuman Pasca/Prakualifikasi", date: "1 Juni 2026", status: "completed" },
-                { step: "Download Dokumen Pemilihan", date: "2 Juni - 8 Juni 2026", status: "completed" },
-                { step: "Upload Dokumen Penawaran", date: "9 Juni 2026", status: "completed" },
-                { step: "Evaluasi & Negosiasi", date: "10 Juni - 30 Juni 2026", status: "completed" },
-                { step: "Pengumuman Pemenang", date: "2 Juli 2026", status: "completed" },
-                { step: "Masa Sanggah (Bebas Sanggahan)", date: "3 Juli - 8 Juli 2026", status: "completed" },
-                { step: "Tanda Tangan Kontrak", date: "14 Juli 2026", status: "completed" }
-            ]
-        }
-    ]);
-
-    useEffect(() => {
-        if (!selectedTender && archivedTenders && archivedTenders.length > 0) {
-            setSelectedTender(archivedTenders[0]);
-        }
-    }, [archivedTenders]);
-
-    const handleTenderClick = (t) => {
-        setSelectedTender(t);
-        setActiveTab('summary');
-        setAiSanggahDraft('');
-        setEvaluasiInput('');
-    };
-
-    const handleSyncSchedule = () => {
-        if (!selectedTender) return;
-        setIsSyncing(true);
-        setTimeout(() => {
-            setIsSyncing(false);
-            alert("Sinkronisasi Jadwal SPSE Sukses! Seluruh tahapan jadwal dimutakhirkan dengan data portal LPSE terbaru.");
-        }, 1200);
-    };
-
-    const handleAnalyzeEvaluasi = (e) => {
-        e.preventDefault();
-        if (!evaluasiInput) return;
-
-        setIsAnalyzing(true);
-        setTimeout(() => {
-            setIsAnalyzing(false);
-            setAiSanggahDraft(
-                `KOP SURAT PERUSAHAAN\n` +
-                `PT. MAJU KONSTRUKSI\n` +
-                `=============================================================\n\n` +
-                `Nomor   : 045/DIR-MK/VII/2026\n` +
-                `Lampiran: 1 (satu) berkas\n` +
-                `Hal     : Sanggahan Hasil Evaluasi Kualifikasi/Teknis\n\n` +
-                `Kepada Yth.\n` +
-                `Kelompok Kerja (Pokja) Pemilihan\n` +
-                `Paket Pekerjaan: ${selectedTender.name}\n` +
-                `di Tempat\n\n` +
-                `Dengan hormat,\n` +
-                `Sehubungan dengan pengumuman pemenang/hasil evaluasi kualifikasi untuk paket pekerjaan ${selectedTender.name}, di mana perusahaan kami, PT. Maju Konstruksi, dinyatakan GUGUR dengan alasan:\n\n` +
-                `"${evaluasiInput}"\n\n` +
-                `Maka dengan ini kami mengajukan SANGGAHAN atas keputusan tersebut dengan argumen dan bukti hukum sebagai berikut:\n\n` +
-                `1. Bahwa keputusan Pokja Pemilihan tidak objektif karena berdasarkan aturan Dokumen Pemilihan (LDP) dan Permen PUPR No. 1 Tahun 2022, syarat klasifikasi SKK personel Pelaksana adalah sah apabila terdaftar resmi di LPJK. Personel kami memiliki sertifikat valid nomor SKK-9812-3213 yang terdaftar aktif s.d. Desember 2028.\n` +
-                `2. Terlampir berkas print-out verifikasi LPJK Portal sebagai bukti keabsahan dokumen kami untuk menganulir alasan gugur Pokja.\n\n` +
-                `Kami memohon Pokja Pemilihan untuk melakukan evaluasi ulang secara objektif dan adil sesuai dengan regulasi PBJ Pemerintah yang berlaku.\n\n` +
-                `Demikian sanggahan ini kami sampaikan. Atas perhatian dan tindak lanjutnya kami ucapkan terima kasih.\n\n\n` +
-                `Rembang, 19 Juli 2026\n` +
-                `PT. Maju Konstruksi,\n\n\n\n\n` +
-                `Ir. Budi Santoso\n` +
-                `Direktur Utama`
-            );
-        }, 1500);
-    };
 
     return (
         <div className="w-full space-y-6">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Lock, CheckCircle2, RefreshCw, Printer, Users } from 'lucide-react';
-import { SELECT_STYLE, LABEL_STYLE as LABEL } from '../../config/fields';
+import { SELECT_STYLE, LABEL_STYLE as LABEL } from '../../../../data/mock/workspace/fields';
 
 export default function KualifikasiSection({
     kualifikasiSubTab = 'validation',

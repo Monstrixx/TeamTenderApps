@@ -1,0 +1,17 @@
+components:
+  schemas:
+    Company:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            address:
+              type: string
+            npwp:
+              type: string
+            director_name:
+              type: string
+        - $ref: './Workspace.yaml#/components/schemas/AuditFields'

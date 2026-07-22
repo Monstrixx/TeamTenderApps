@@ -1,0 +1,52 @@
+components:
+  schemas:
+    AuditFields:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+          format: uuid
+        updatedBy:
+          type: string
+          format: uuid
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+        deletedBy:
+          type: string
+          format: uuid
+          nullable: true
+
+    Workspace:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+            package_name:
+              type: string
+            hps:
+              type: number
+            location:
+              type: string
+            agency:
+              type: string
+            status:
+              type: string
+            schedule:
+              type: object
+              properties:
+                start_date:
+                  type: string
+                  format: date-time
+                end_date:
+                  type: string
+                  format: date-time
+        - $ref: '#/components/schemas/AuditFields'

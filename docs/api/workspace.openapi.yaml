@@ -1,0 +1,187 @@
+openapi: 3.1.0
+info:
+  title: TeamTender Workspace API
+  version: 1.0.0
+  description: API Spesifikasi untuk operasi tender Workspace.
+
+servers:
+  - url: https://api.teamtender.id
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Workspace
+  - name: Company
+  - name: Equipment
+  - name: Supplier
+  - name: Documents
+  - name: Validation
+  - name: System
+
+paths:
+  /api/v1/health:
+    get:
+      tags: [System]
+      summary: Health Check
+      responses:
+        '200':
+          description: OK
+
+  /api/v1/version:
+    get:
+      tags: [System]
+      summary: Get API Version
+      responses:
+        '200':
+          description: OK
+
+  /api/v1/workspaces/{id}:
+    get:
+      tags: [Workspace]
+      summary: Get Workspace Metadata
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: 'common.yaml#/components/parameters/HeaderRequestId'
+        - $ref: 'common.yaml#/components/parameters/HeaderCorrelationId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: 'schemas/Workspace.yaml#/components/schemas/Workspace'
+                  meta:
+                    $ref: 'common.yaml#/components/schemas/BaseMeta'
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+                      id: "12345"
+                      package_name: "Tender Konstruksi"
+                    meta:
+                      requestId: "1234-5678"
+                      timestamp: "2026-07-23T10:00:00Z"
+                    errors: null
+        '401':
+          $ref: 'errors.yaml#/components/responses/Unauthorized'
+        '404':
+          $ref: 'errors.yaml#/components/responses/NotFound'
+
+  /api/v1/workspaces/{id}/equipment:
+    get:
+      tags: [Equipment]
+      summary: List Equipment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: 'common.yaml#/components/parameters/PaginationPage'
+        - $ref: 'common.yaml#/components/parameters/PaginationPageSize'
+        - $ref: 'common.yaml#/components/parameters/SearchQuery'
+        - $ref: 'common.yaml#/components/parameters/SortQuery'
+        - $ref: 'common.yaml#/components/parameters/OrderQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: 'schemas/Equipment.yaml#/components/schemas/EquipmentResponse'
+                  meta:
+                    $ref: 'common.yaml#/components/schemas/EnvelopeMeta'
+
+    post:
+      tags: [Equipment]
+      summary: Add Equipment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: 'common.yaml#/components/parameters/HeaderIdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'schemas/Equipment.yaml#/components/schemas/EquipmentRequest'
+      responses:
+        '201':
+          description: Created
+        '400':
+          $ref: 'errors.yaml#/components/responses/ValidationError'
+
+  /api/v1/workspaces/{id}/documents:
+    get:
+      tags: [Documents]
+      summary: List Documents
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: 'schemas/Document.yaml#/components/schemas/DocumentResponse'
+
+    post:
+      tags: [Documents]
+      summary: Upload Document
+      description: Uploads a document via multipart/form-data.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                documentType:
+                  type: string
+      responses:
+        '201':
+          description: File uploaded
+        '400':
+          $ref: 'errors.yaml#/components/responses/ValidationError'

@@ -40,6 +40,7 @@ import { SectionErrorBoundary } from '../components/ui/error-boundary';
 export default function Workspace() {
     const workspaceState = useWorkspace();
     const {
+        isLoading, error,
         subTab, setSubTab,
         tenderMeta, aiLogs, setAiLogs, supplierDirectory,
         requestLetterNo, setRequestLetterNo, requestPreviewText, setRequestPreviewText,
@@ -65,13 +66,35 @@ export default function Workspace() {
         pricingStrategy, setPricingStrategy, targetPercentage, setTargetPercentage,
         targetNominal, setTargetNominal, useLumpsumOverride, setUseLumpsumOverride,
         profitMargin, setProfitMargin, rabActiveSheet, setRabActiveSheet,
-        actions
+        actions, deleteEquipment
     } = workspaceState;
     
     const { getGrandTotal } = actions || {};
     const { handleValidateDoc, handleValidateAll } = actions || {};
     const { triggerRkkGenerate, triggerRmpkGenerate } = actions || {};
     const { handleUploadKsoFile, handleUploadBidBondFile } = actions || {};
+
+    if (isLoading) {
+        return (
+            <div className="p-8">
+                <SectionSkeleton />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-8">
+                <div className="bg-red-50 text-red-600 p-4 rounded-lg flex items-center gap-3">
+                    <ShieldAlert className="w-5 h-5" />
+                    <div>
+                        <h3 className="font-medium">Gagal Memuat Workspace</h3>
+                        <p className="text-sm opacity-90">{error.message}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // SPSE Transfer Simulation
     const handleSpseFillBack = () => {
@@ -677,6 +700,7 @@ export default function Workspace() {
                                 {teknisSubTab === 'peralatan' && (
                                     <PeralatanSection 
                                         peralatanList={peralatanList}
+                                        onDeleteEquipment={(id) => actions.deleteEquipment ? actions.deleteEquipment.mutate(id) : deleteEquipment.mutate(id)}
                                     />
                                 )}
                                                              {/* TAB: RKK */}

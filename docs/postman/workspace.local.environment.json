@@ -1,0 +1,19 @@
+{
+	"id": "11111111-2222-3333-4444-555555555555",
+	"name": "TeamTender - Local",
+	"values": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "authToken",
+			"value": "local_dev_token_example",
+			"type": "secret",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment"
+}

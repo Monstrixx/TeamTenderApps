@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { INITIAL_DOC_VALIDATION } from '../../data/mock/workspace';
+import { useState, useEffect } from 'react';
+import { useDocumentsQuery } from '../queries/workspace/useDocumentsQuery';
 
 // Helper functions for updating document validation statuses
 const markDocumentValidating = (docObj, key) => ({
@@ -27,9 +27,16 @@ const createValidationLog = (key, isValidatingAll) => {
     };
 };
 
-export function useWorkspaceValidation(setAiLogs) {
-    const [docValidation, setDocValidation] = useState(INITIAL_DOC_VALIDATION);
+export function useWorkspaceValidation(setAiLogs, workspaceId = '12345') {
+    const { data: documentsData } = useDocumentsQuery(workspaceId);
+    const [docValidation, setDocValidation] = useState({});
     const [isValidatingAll, setIsValidatingAll] = useState(false);
+
+    useEffect(() => {
+        if (documentsData && Object.keys(docValidation).length === 0) {
+            setDocValidation(documentsData);
+        }
+    }, [documentsData]);
 
     const handleValidateDoc = (key) => {
         setDocValidation(prev => markDocumentValidating(prev, key));

@@ -15,6 +15,7 @@ const MitraKso = lazy(() => import('../../pages/MitraKso'));
 
 export const ROUTE_MAP = {
   'landing': '/',
+  'login': '/login',
   'dashboard': '/dashboard',
   'profil': '/profil-perusahaan',
   'direktori-relasi': '/vendor-hub',
@@ -29,6 +30,7 @@ export const ROUTE_MAP = {
 
 export const PATH_TO_ID = {
   '/': 'landing',
+  '/login': 'login',
   '/dashboard': 'dashboard',
   '/profil-perusahaan': 'profil',
   '/vendor-hub': 'direktori-relasi',
@@ -43,18 +45,21 @@ export const PATH_TO_ID = {
   '/mitra-kso': 'mitra-kso'
 };
 
+const LoginPage = lazy(() => import('../../pages/LoginPage'));
+
 export const routes = [
-  { path: '/', id: 'landing', element: LandingPage, isPublic: true },
-  { path: '/dashboard', id: 'dashboard', element: Dashboard, isPublic: false },
-  { path: '/profil-perusahaan', id: 'profil', element: ProfilPerusahaan, isPublic: false },
-  { path: '/vendor-hub', id: 'direktori-relasi', element: DirektoriRelasi, isPublic: false },
-  { path: '/direktori-relasi', id: 'direktori-relasi', element: DirektoriRelasi, isPublic: false },
-  { path: '/tender-baru', id: 'tender-baru', element: TenderBaru, isPublic: false },
-  { path: '/tender-aktif', id: 'tender-aktif', element: TenderAktif, isPublic: false },
-  { path: '/tender-arsip', id: 'tender-arsip', element: TenderArsip, isPublic: false },
-  { path: '/workspace', id: 'workspace', element: Workspace, isPublic: false },
-  { path: '/surat-menyurat', id: 'surat', element: SuratMenyurat, isPublic: false },
-  { path: '/validation', id: 'verify', element: ValidationPage, isPublic: true },
-  { path: '/verify', id: 'verify', element: ValidationPage, isPublic: true },
-  { path: '/mitra-kso', id: 'mitra-kso', element: MitraKso, isPublic: false }
+  { path: '/', id: 'landing', element: LandingPage, type: 'public', restricted: false },
+  { path: '/login', id: 'login', element: LoginPage, type: 'public', restricted: true },
+  { path: '/dashboard', id: 'dashboard', element: Dashboard, type: 'protected' },
+  { path: '/profil-perusahaan', id: 'profil', element: ProfilPerusahaan, type: 'protected' },
+  { path: '/vendor-hub', id: 'direktori-relasi', element: DirektoriRelasi, type: 'protected' },
+  { path: '/direktori-relasi', id: 'direktori-relasi', element: DirektoriRelasi, type: 'protected' },
+  { path: '/tender-baru', id: 'tender-baru', element: TenderBaru, type: 'protected' },
+  { path: '/tender-aktif', id: 'tender-aktif', element: TenderAktif, type: 'protected' },
+  { path: '/tender-arsip', id: 'tender-arsip', element: TenderArsip, type: 'protected' },
+  { path: '/workspace', id: 'workspace', element: Workspace, type: 'permission', permission: 'VIEW_WORKSPACE' },
+  { path: '/surat-menyurat', id: 'surat', element: SuratMenyurat, type: 'protected' },
+  { path: '/validation', id: 'verify', element: ValidationPage, type: 'public', restricted: false },
+  { path: '/verify', id: 'verify', element: ValidationPage, type: 'public', restricted: false },
+  { path: '/mitra-kso', id: 'mitra-kso', element: MitraKso, type: 'protected' }
 ];

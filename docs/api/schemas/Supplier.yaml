@@ -1,0 +1,19 @@
+components:
+  schemas:
+    SupplierResponse:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            category:
+              type: string
+            rating:
+              type: number
+            contact_person:
+              type: string
+            phone:
+              type: string
+        - $ref: './Workspace.yaml#/components/schemas/AuditFields'

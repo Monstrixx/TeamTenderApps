@@ -1,0 +1,19 @@
+{
+	"id": "aaaaaa-bbbb-cccc-dddd-eeeeee",
+	"name": "TeamTender - Staging",
+	"values": [
+		{
+			"key": "baseUrl",
+			"value": "https://api-staging.teamtender.id",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "authToken",
+			"value": "staging_token_example",
+			"type": "secret",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment"
+}

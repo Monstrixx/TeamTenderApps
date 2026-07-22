@@ -1,0 +1,106 @@
+components:
+  schemas:
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 150
+        totalPages:
+          type: integer
+          example: 8
+      required:
+        - page
+        - pageSize
+        - total
+        - totalPages
+        
+    BaseMeta:
+      type: object
+      properties:
+        requestId:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-1234-56789abcdef0"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-07-23T10:00:00Z"
+      required:
+        - requestId
+        - timestamp
+
+    EnvelopeMeta:
+      allOf:
+        - $ref: '#/components/schemas/BaseMeta'
+        - $ref: '#/components/schemas/PaginationMeta'
+
+  parameters:
+    PaginationPage:
+      name: page
+      in: query
+      description: Nomor halaman
+      required: false
+      schema:
+        type: integer
+        default: 1
+    PaginationPageSize:
+      name: pageSize
+      in: query
+      description: Jumlah item per halaman
+      required: false
+      schema:
+        type: integer
+        default: 20
+    SearchQuery:
+      name: search
+      in: query
+      description: Teks pencarian umum
+      required: false
+      schema:
+        type: string
+    SortQuery:
+      name: sort
+      in: query
+      description: Field untuk sorting
+      required: false
+      schema:
+        type: string
+    OrderQuery:
+      name: order
+      in: query
+      description: Arah sorting (asc / desc)
+      required: false
+      schema:
+        type: string
+        enum:
+          - asc
+          - desc
+    
+    HeaderRequestId:
+      name: X-Request-ID
+      in: header
+      description: Unique identifier untuk request tracking
+      required: true
+      schema:
+        type: string
+    HeaderCorrelationId:
+      name: X-Correlation-ID
+      in: header
+      description: Unique identifier untuk distributed tracing
+      required: false
+      schema:
+        type: string
+    HeaderIdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      description: Key untuk request mutasi (POST/PUT/DELETE) menghindari replay duplikat
+      required: false
+      schema:
+        type: string

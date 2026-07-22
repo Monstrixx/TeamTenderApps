@@ -1,0 +1,106 @@
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        errors:
+          $ref: '#/components/schemas/ErrorDetail'
+      required:
+        - success
+        - errors
+
+    ErrorDetail:
+      type: object
+      properties:
+        code:
+          type: string
+          description: "Internal error code (ref: error-codes.md)"
+          example: "WORKSPACE_NOT_FOUND"
+        message:
+          type: string
+          example: "Workspace tidak ditemukan"
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              issue:
+                type: string
+        requestId:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-1234-56789abcdef0"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-07-23T10:00:00Z"
+      required:
+        - code
+        - message
+        - requestId
+        - timestamp
+
+  responses:
+    Unauthorized:
+      description: Unauthorized (Token tidak valid/tidak ada)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            errors:
+              code: "AUTH_001"
+              message: "Token autentikasi tidak valid atau sudah usang."
+              requestId: "1234-5678"
+              timestamp: "2026-07-23T10:00:00Z"
+
+    SessionExpired:
+      description: Session Expired (Token kedaluwarsa)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            errors:
+              code: "AUTH_002"
+              message: "Sesi telah berakhir, mohon refresh token."
+              requestId: "1234-5678"
+              timestamp: "2026-07-23T10:00:00Z"
+
+    NotFound:
+      description: Resource tidak ditemukan
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            errors:
+              code: "WS_001"
+              message: "Resource tidak ditemukan."
+              requestId: "1234-5678"
+              timestamp: "2026-07-23T10:00:00Z"
+
+    ValidationError:
+      description: Request parameter / body tidak valid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            errors:
+              code: "VAL_001"
+              message: "Terdapat kesalahan validasi pada data."
+              details:
+                - field: "capacity"
+                  issue: "Wajib diisi"
+              requestId: "1234-5678"
+              timestamp: "2026-07-23T10:00:00Z"

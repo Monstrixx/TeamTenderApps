@@ -1,10 +1,30 @@
 import { useState } from 'react';
-import { INITIAL_PERSONEL_LIST, INITIAL_PERALATAN_LIST } from '../../data/mock/workspace';
+import { useEquipmentQuery } from '../queries/workspace/useEquipmentQuery';
+import { useEquipmentMutations } from '../mutations/workspace/useEquipmentMutations';
+import { usePersonnelQuery } from '../queries/workspace/useExtendedQueries';
 
-export function useWorkspaceTeknis(setAiLogs) {
-    const [personelList, setPersonelList] = useState(INITIAL_PERSONEL_LIST);
+export function useWorkspaceTeknis(setAiLogs, workspaceId = '12345') {
+    const { data: personnelData, isLoading: isPersonnelLoading } = usePersonnelQuery(workspaceId);
+    const personelList = personnelData || [];
+    // We provide a setPersonelList wrapper just for backward compatibility if components try to do basic adds
+    const setPersonelList = () => { console.warn('setPersonelList is deprecated. Use mutations instead.'); };
+    
     const [selectedPersonelId, setSelectedPersonelId] = useState('p1');
-    const [peralatanList, setPeralatanList] = useState(INITIAL_PERALATAN_LIST);
+    
+    // Replace local state with React Query
+    const { data: equipmentData, isLoading: isEquipmentLoading } = useEquipmentQuery(workspaceId);
+    const { addEquipment, updateEquipment, deleteEquipment } = useEquipmentMutations(workspaceId);
+    
+    const peralatanList = equipmentData?.data || [];
+    
+    // We provide a setPeralatanList wrapper just for backward compatibility if components try to do basic adds,
+    // but ideally we should update the UI to call mutations directly.
+    const setPeralatanList = (newListOrUpdater) => {
+        // Since we are moving to React Query, direct state updates from UI should be intercepted
+        // However, if the UI still expects this, it will just be a no-op or we could do a crude sync,
+        // but it's better to update the UI to use the add/update/delete methods.
+        console.warn('setPeralatanList is deprecated. Use addEquipment/deleteEquipment mutations.');
+    };
     
     // RKK State
     const [rkkMenu, setRkkMenu] = useState('cover'); // 'cover' | 'pakta' | 'kepemimpinan' | 'ibprp' | 'sasaran' | 'dukungan' | 'operasi' | 'evaluasi'
@@ -81,6 +101,10 @@ export function useWorkspaceTeknis(setAiLogs) {
         rmpkMenu, setRmpkMenu,
         isRmpkProcessing, setIsRmpkProcessing,
         rmpkProgress, setRmpkProgress,
+        isEquipmentLoading,
+        addEquipment,
+        updateEquipment,
+        deleteEquipment,
         actions: {
             triggerRmpkGenerate,
             triggerRkkGenerate

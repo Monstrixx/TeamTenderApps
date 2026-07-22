@@ -27,7 +27,7 @@ export default function SupplierSection({
                     className={`w-full ${SELECT_STYLE}`}
                 >
                     {suppliers.map(s => (
-                        <option key={s.id} value={s.id}>{s.nama} ({s.kontak})</option>
+                        <option key={s.id} value={s.id}>{s.name} ({s.phone})</option>
                     ))}
                 </select>
             </div>
@@ -47,7 +47,7 @@ export default function SupplierSection({
                             <div className="flex justify-between items-start">
                                 <div className="font-bold text-xs text-slate-800 flex items-center gap-1.5">
                                     <Building2 size={13} className="text-indigo-500 shrink-0" />
-                                    <span>{s.nama}</span>
+                                    <span>{s.name}</span>
                                 </div>
                                 {isSelected && <CheckCircle2 size={14} className="text-indigo-600 shrink-0" />}
                             </div>
@@ -55,11 +55,11 @@ export default function SupplierSection({
                             <div className="space-y-1 text-[11px] text-slate-500">
                                 <div className="flex items-center gap-1.5">
                                     <MapPin size={11} className="text-slate-400 shrink-0" />
-                                    <span className="truncate">{s.alamat}</span>
+                                    <span className="truncate">{s.category || 'Alamat tidak tersedia'}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <Phone size={11} className="text-slate-400 shrink-0" />
-                                    <span>{s.kontak}</span>
+                                    <span>{s.phone}</span>
                                 </div>
                             </div>
                         </div>

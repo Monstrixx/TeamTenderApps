@@ -37,9 +37,9 @@ export default function PeralatanSection({
                                     <tbody className="divide-y divide-slate-100 bg-white">
                                         {peralatanList.map(eq => (
                                             <tr key={eq.id}>
-                                                <td className="px-3 py-2 font-medium">{eq.jenis}</td>
-                                                <td className="px-3 py-2">{eq.kapasitas}</td>
-                                                <td className="px-3 py-2 text-center">{eq.jumlah}</td>
+                                                <td className="px-3 py-2 font-medium">{eq.name}</td>
+                                                <td className="px-3 py-2">{eq.capacity}</td>
+                                                <td className="px-3 py-2 text-center">1</td>
                                                 <td className="px-3 py-2">
                                                     <button 
                                                         onClick={() => onDeleteEquipment(eq.id)} 
@@ -101,11 +101,11 @@ export default function PeralatanSection({
                                         {peralatanList.map((eq, idx) => (
                                             <tr key={eq.id}>
                                                 <td className="border border-black p-1.5 text-center">{idx + 1}</td>
-                                                <td className="border border-black p-1.5">{eq.jenis}</td>
-                                                <td className="border border-black p-1.5">{eq.merek}</td>
-                                                <td className="border border-black p-1.5 text-center">{eq.kapasitas}</td>
-                                                <td className="border border-black p-1.5 text-center">{eq.jumlah}</td>
-                                                <td className="border border-black p-1.5">{eq.status}</td>
+                                                <td className="border border-black p-1.5">{eq.name}</td>
+                                                <td className="border border-black p-1.5">{eq.merk}</td>
+                                                <td className="border border-black p-1.5 text-center">{eq.capacity}</td>
+                                                <td className="border border-black p-1.5 text-center">1</td>
+                                                <td className="border border-black p-1.5">{eq.ownershipStatus}</td>
                                             </tr>
                                         ))}
                                         <tr>

@@ -11,7 +11,7 @@ import {
     TENDER_METADATA, INITIAL_SUPPLIERS,
     INITIAL_PERSONEL_LIST, INITIAL_PERALATAN_LIST, INITIAL_DOC_VALIDATION,
     INITIAL_KSO_PARTNERS, INITIAL_UPAH_LIST, INITIAL_BAHAN_LIST, INITIAL_ALAT_LIST,
-    INITIAL_AHSP_ITEMS, INITIAL_BOQ_LIST
+    INITIAL_AHSP_ITEMS, INITIAL_BOQ_LIST, INITIAL_AI_LOGS
 } from '../modules/workspace/config';
 import {
     calculateItemBasePrice,
@@ -24,6 +24,7 @@ import { generateRequestLetterText } from '../shared/helpers/requestLetterGenera
 import { markDocumentValidating, markDocumentValid, createValidationLog } from '../engines/validation/documentValidationEngine';
 import { getAvailableMenus } from '../containers/WorkspaceContainer';
 import { PersonilSection } from '../modules/workspace/personil/components';
+import { SuratSection } from '../modules/workspace/surat/components';
 import { PeralatanSection } from '../modules/workspace/peralatan/components';
 import { AdministrasiSection } from '../modules/workspace/administrasi/components';
 import { KualifikasiSection } from '../modules/workspace/kualifikasi/components';
@@ -43,8 +44,39 @@ export default function Workspace() {
     // Supplier Directory for Requests
     const supplierDirectory = INITIAL_SUPPLIERS;
 
-    const [selectedSupplier] = useState('s1');
-    const [requestLetterNo] = useState("015/PM-MK/VII/2026");
+    const [selectedSupplier, setSelectedSupplier] = useState('s1');
+    const [requestLetterNo, setRequestLetterNo] = useState("015/PM-MK/VII/2026");
+    const [requestPreviewText, setRequestPreviewText] = useState("");
+
+    // Auto-update request letter preview
+    useEffect(() => {
+        const supplier = supplierDirectory.find(s => s.id === selectedSupplier);
+        if (!supplier) return;
+        setRequestPreviewText(
+            generateRequestLetterText({
+                supplier: { name: supplier.nama },
+                tender: {
+                    packageName: tenderMeta.title,
+                    hpsValue: "Rp 2.889.720.000,00",
+                    pokjaName: tenderMeta.pokja,
+                    pokjaAddress: "Bagian PBJ, Setda Kab. Rembang"
+                },
+                company: {
+                    name: "PT. Maju Konstruksi",
+                    requestLetterNo,
+                    date: "Jakarta, 19 Juli 2026"
+                },
+                signatory: {
+                    name: "Ir. Budi Santoso",
+                    title: "Direktur Utama"
+                },
+                equipment: [
+                    { name: "Dump Truck Kapasitas 4 m³", quantity: 2, unit: "Unit" },
+                    { name: "Concrete Mixer Kapasitas 0.3 m³", quantity: 1, unit: "Unit" }
+                ]
+            })
+        );
+    }, [selectedSupplier, requestLetterNo, tenderMeta.pokja, tenderMeta.title, supplierDirectory]);
 
     // RAB Workspace States
     const [pricingStrategy] = useState('original'); // 'original' | 'percent' | 'nominal'
@@ -853,6 +885,19 @@ export default function Workspace() {
                                          tenderMeta={tenderMeta}
                                      />
                                  )}
+
+                                {/* TAB: Surat Dukungan */}
+                                {teknisSubTab === 'dukungan' && (
+                                    <SuratSection 
+                                        supplierDirectory={supplierDirectory}
+                                        selectedSupplier={selectedSupplier}
+                                        onSelectSupplier={setSelectedSupplier}
+                                        requestLetterNo={requestLetterNo}
+                                        onRequestLetterNoChange={setRequestLetterNo}
+                                        requestPreviewText={requestPreviewText}
+                                        tenderMeta={tenderMeta}
+                                    />
+                                )}
 
                                 {/* TAB: Jadwal */}
                                 {teknisSubTab === 'jadwal' && (

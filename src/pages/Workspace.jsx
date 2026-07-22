@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import {
     Database, Table, Calculator, HardDrive, Lock, FileDown, PlusCircle, PenTool, BookOpen, 
     Sparkles, ShieldAlert, FileText, CheckCircle2, ChevronRight, Download, FileSpreadsheet, UploadCloud, TrendingDown, Zap, Settings, 

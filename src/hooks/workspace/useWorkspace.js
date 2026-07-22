@@ -6,22 +6,23 @@ import { useWorkspaceTeknis } from './useWorkspaceTeknis';
 import { useWorkspaceAdministrasi } from './useWorkspaceAdministrasi';
 import { useWorkspaceAI } from './useWorkspaceAI';
 import { useWorkspaceValidation } from './useWorkspaceValidation';
-import { TENDER_METADATA } from '../../data/mock/workspace';
+import { TENDER_METADATA, INITIAL_SUPPLIERS } from '../../data/mock/workspace';
 
 export function useWorkspace() {
     const tenderMeta = TENDER_METADATA;
 
     const tabsState = useWorkspaceTabs();
-    const overviewState = useWorkspaceOverview();
     const rabState = useWorkspaceRAB();
     const kualifikasiState = useWorkspaceKualifikasi();
     const aiState = useWorkspaceAI();
     const teknisState = useWorkspaceTeknis(aiState.setAiLogs);
+    const overviewState = useWorkspaceOverview(tenderMeta, INITIAL_SUPPLIERS, teknisState.peralatanList);
     const administrasiState = useWorkspaceAdministrasi(aiState.setAiLogs, tenderMeta);
     const validationState = useWorkspaceValidation(aiState.setAiLogs);
 
     return {
         tenderMeta,
+        supplierDirectory: INITIAL_SUPPLIERS,
         ...tabsState,
         ...overviewState,
         ...rabState,

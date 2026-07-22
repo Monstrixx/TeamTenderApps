@@ -30,4 +30,6 @@ Draft
 6. [Software Inventory](./05-software-inventory.md)
 7. [Technical Architecture Assessment](./06-technical-architecture-assessment.md)
 8. [Workspace Business Domain Analysis](./07-workspace-domain-analysis.md)
-9. [Changelog](./CHANGELOG.md)
+9. [Workspace Dependency Audit](./08-workspace-dependency-audit.md)
+10. [Business Engine Inventory](./09-business-engine-inventory.md)
+11. [Changelog](./CHANGELOG.md)

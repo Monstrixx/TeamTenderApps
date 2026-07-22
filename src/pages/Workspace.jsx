@@ -20,6 +20,9 @@ import {
     calculateBoqItemTotal as calcBoqItemTotal,
     calculateBoqGrandTotal as calcBoqGrandTotal
 } from '../modules/workspace/helpers/workspaceHelpers';
+import { generateRequestLetterText } from '../shared/helpers/requestLetterGenerator';
+import { markDocumentValidating, markDocumentValid, createValidationLog } from '../engines/validation/documentValidationEngine';
+import { getAvailableMenus } from '../containers/WorkspaceContainer';
 import { AiLogPanel } from '../modules/workspace/ai/components';
 import { SuratSection } from '../modules/workspace/surat/components';
 import { PersonilSection } from '../modules/workspace/personil/components';
@@ -48,15 +51,12 @@ export default function Workspace() {
 
     // RAB Workspace States
     const [pricingStrategy, setPricingStrategy] = useState('original'); // 'original' | 'percent' | 'nominal'
-    const [targetPercentage, setTargetPercentage] = useState(5); // % reduction
-    const [targetNominal, setTargetNominal] = useState(2500000000.00); // Nominal target
-    const [useLumpsumOverride, setUseLumpsumOverride] = useState(false);
-    const [isBoqUploaded, setIsBoqUploaded] = useState(false);
-    const [isSimulatingAi, setIsSimulatingAi] = useState(false);
+    const [targetPercentage] = useState(5); // % reduction
+    const [targetNominal] = useState(2500000000.00); // Nominal target
+    const [useLumpsumOverride] = useState(false);
     const [rabActiveSheet, setRabActiveSheet] = useState('hsd'); // 'hsd' | 'ahsp' | 'boq' | 'rekap'
     const [profitMargin, setProfitMargin] = useState(10); // Default 10%
     const [rabTotal, setRabTotal] = useState(11500000000); // Dummy HPS
-    const [isApendoSyncing, setIsApendoSyncing] = useState(false);
 
     const [isSpseFilled, setIsSpseFilled] = useState(false);
     const [isSpseFilling, setIsSpseFilling] = useState(false);
@@ -74,10 +74,10 @@ export default function Workspace() {
     const [teknisSubTab, setTeknisSubTab] = useState('personel'); // 'personel' | 'peralatan' | 'rkk' | 'dukungan' | 'jadwal' | 'metode' | 'rmpk'
 
     // New Teknis States
-    const [personelList, setPersonelList] = useState(INITIAL_PERSONEL_LIST);
+    const [personelList] = useState(INITIAL_PERSONEL_LIST);
     const [selectedPersonelId, setSelectedPersonelId] = useState('p1');
 
-    const [peralatanList, setPeralatanList] = useState(INITIAL_PERALATAN_LIST);
+    const [peralatanList] = useState(INITIAL_PERALATAN_LIST);
 
     // Update RKK Section States to accommodate TOC
     const [rkkMenu, setRkkMenu] = useState('cover'); // 'cover' | 'pakta' | 'kepemimpinan' | 'ibprp' | 'sasaran' | 'dukungan' | 'operasi' | 'evaluasi'
@@ -88,23 +88,10 @@ export default function Workspace() {
     const [isValidatingAll, setIsValidatingAll] = useState(false);
 
     const handleValidateDoc = (key) => {
-        setDocValidation(prev => ({
-            ...prev,
-            [key]: { ...prev[key], status: 'validating' }
-        }));
+        setDocValidation(prev => markDocumentValidating(prev, key));
         setTimeout(() => {
-            setDocValidation(prev => ({
-                ...prev,
-                [key]: { ...prev[key], status: 'valid' }
-            }));
-            setAiLogs(logs => [
-                ...logs,
-                { 
-                    time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }), 
-                    agent: "Sistem Validasi", 
-                    msg: `Dokumen ${key.toUpperCase()} berhasil divalidasi dan dicocokkan dengan persyaratan tender. Status: VALID.` 
-                }
-            ]);
+            setDocValidation(prev => markDocumentValid(prev, key));
+            setAiLogs(logs => [...logs, createValidationLog(key, false)]);
         }, 1000);
     };
 
@@ -113,23 +100,10 @@ export default function Workspace() {
         const keys = Object.keys(docValidation);
         keys.forEach((key, index) => {
             setTimeout(() => {
-                setDocValidation(prev => ({
-                    ...prev,
-                    [key]: { ...prev[key], status: 'validating' }
-                }));
+                setDocValidation(prev => markDocumentValidating(prev, key));
                 setTimeout(() => {
-                    setDocValidation(prev => ({
-                        ...prev,
-                        [key]: { ...prev[key], status: 'valid' }
-                    }));
-                    setAiLogs(logs => [
-                        ...logs,
-                        { 
-                            time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }), 
-                            agent: "Sistem Validasi", 
-                            msg: `Dokumen ${key.toUpperCase()} berhasil divalidasi secara otomatis. Status: VALID.` 
-                        }
-                    ]);
+                    setDocValidation(prev => markDocumentValid(prev, key));
+                    setAiLogs(logs => [...logs, createValidationLog(key, true)]);
                     if (index === keys.length - 1) {
                         setIsValidatingAll(false);
                     }
@@ -203,21 +177,17 @@ export default function Workspace() {
     const ksoPartnersList = INITIAL_KSO_PARTNERS;
 
     // Default basic prices (Upah, Bahan, Alat)
-    const [upahList, setUpahList] = useState(INITIAL_UPAH_LIST);
-    const [bahanList, setBahanList] = useState(INITIAL_BAHAN_LIST);
-    const [alatList, setAlatList] = useState(INITIAL_ALAT_LIST);
+    const [upahList] = useState(INITIAL_UPAH_LIST);
+    const [bahanList] = useState(INITIAL_BAHAN_LIST);
+    const [alatList] = useState(INITIAL_ALAT_LIST);
 
     // AHSP (Analisa Harga Satuan Pekerjaan)
     const ahspItems = INITIAL_AHSP_ITEMS;
 
     // Quantities & Base Prices for BOQ
-    const [boqList, setBoqList] = useState(INITIAL_BOQ_LIST);
+    const [boqList] = useState(INITIAL_BOQ_LIST);
 
     // Live calculations based on strategies
-    const getBasePrice = (type, itemId) => calculateItemBasePrice(type, itemId, upahList, bahanList, alatList);
-    const calculateAhspTotal = (ahsp) => calculateAhspItemTotal(ahsp, upahList, bahanList, alatList);
-    const getBoqUnitRate = (item) => calcBoqUnitRate(item, ahspItems, upahList, bahanList, alatList, pricingStrategy, targetPercentage);
-    const getBoqTotal = (item) => calcBoqItemTotal(item, ahspItems, upahList, bahanList, alatList, pricingStrategy, targetPercentage);
     const getGrandTotal = () => calcBoqGrandTotal(boqList, ahspItems, upahList, bahanList, alatList, pricingStrategy, targetPercentage, useLumpsumOverride, targetNominal);
 
     // Auto-update request letter preview
@@ -225,35 +195,15 @@ export default function Workspace() {
         const supplier = supplierDirectory.find(s => s.id === selectedSupplier);
         if (!supplier) return;
         setRequestPreviewText(
-            `KOP SURAT PERUSAHAAN\n` +
-            `PT. MAJU KONSTRUKSI\n` +
-            `=============================================================\n\n` +
-            `Nomor   : ${requestLetterNo}\n` +
-            `Lampiran: 1 (Satu) Berkas\n` +
-            `Hal     : Permohonan Dukungan Sewa Peralatan Utama\n\n` +
-            `Kepada Yth.\n` +
-            `Pimpinan ${supplier.nama}\n` +
-            `di Tempat\n\n` +
-            `Dengan hormat,\n` +
-            `Sehubungan dengan keikutsertaan kami, PT. Maju Konstruksi, dalam proses pelelangan pekerjaan:\n\n` +
-            `Nama Paket Pekerjaan : Pembangunan Gedung PGRI Rembang\n` +
-            `Nilai HPS            : Rp 2.889.720.000,00\n` +
-            `Pokja Pemilihan      : ${tenderMeta.pokja}\n` +
-            `Alamat Pokja         : Bagian PBJ, Setda Kab. Rembang\n\n` +
-            `Maka dengan ini kami mengajukan permohonan dukungan sewa peralatan utama berupa:\n` +
-            `1. Dump Truck Kapasitas 4 m³ (2 Unit)\n` +
-            `2. Concrete Mixer Kapasitas 0.3 m³ (1 Unit)\n\n` +
-            `Kami berharap Pihak ${supplier.nama} dapat menerbitkan Surat Perjanjian Sewa Peralatan spesifik untuk tender tersebut di atas sebagai kelengkapan dokumen teknis kami.\n\n` +
-            `Demikian surat permohonan ini kami sampaikan. Atas perhatian dan kerja samanya kami ucapkan terima kasih.\n\n\n` +
-            `Jakarta, 19 Juli 2026\n` +
-            `PT. Maju Konstruksi,\n\n\n\n\n` +
-            `Ir. Budi Santoso\n` +
-            `Direktur Utama`
+            generateRequestLetterText({
+                supplierName: supplier.nama,
+                requestLetterNo,
+                pokja: tenderMeta.pokja
+            })
         );
-    }, [selectedSupplier, requestLetterNo]);
+    }, [selectedSupplier, requestLetterNo, tenderMeta.pokja, supplierDirectory]);
 
     // RKK & RMPK States
-    const [selectedRkkSection, setSelectedRkkSection] = useState('bahaya');
     const [isRkkProcessing, setIsRkkGenerating] = useState(false);
     const [rkkProgress, setRkkProgress] = useState(100);
     const [rmpkMenu, setRmpkMenu] = useState('cover'); // 'cover'|'bab1'|'bab2'|'bab3'|'bab4'|'bab5'|'bab6'|'bab7'|'bab8'
@@ -345,21 +295,13 @@ export default function Workspace() {
                 
                 {/* Left Sidebar Menu */}
                 <div className="space-y-2">
-                    {[
+                    {getAvailableMenus(simulatedRole, [
                         { id: 'overview', label: 'Resume Persyaratan', icon: Cpu },
                         { id: 'administrasi', label: 'Dokumen Administrasi', icon: FileText },
                         { id: 'kualifikasi', label: 'Dokumen Kualifikasi', icon: UserCheck },
                         { id: 'teknis', label: 'Dokumen Teknis', icon: Layers },
                         { id: 'rab', label: 'Penawaran Harga', icon: DollarSign },
-                    ].filter(tab => {
-                        if (simulatedRole === 'estimator') {
-                            return tab.id === 'rab';
-                        }
-                        if (simulatedRole === 'partner') {
-                            return tab.id === 'kualifikasi' || tab.id === 'overview' || tab.id === 'administrasi';
-                        }
-                        return true;
-                    }).map(tab => (
+                    ]).map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => setSubTab(tab.id)}

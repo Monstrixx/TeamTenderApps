@@ -20,10 +20,10 @@ Draft
 
 ---
 
-## [0.19.0] - 2026-07-22
+## [0.23.0] - 2026-07-22
 
 ### Added
-- Created `src/modules/workspace/rab/boq/components/BoqSection.jsx` independent domain module for BOQ (Bill of Quantities) presentation, locked volume indicators, items breakdown table, and unit rate/total input fields.
-- Created `src/modules/workspace/rab/boq/components/index.js` re-export index.
-- Refactored `Workspace.jsx` to render `<BoqSection />`, reducing `Workspace.jsx` size from 1,321 LOC to 1,269 LOC (52 lines extracted).
+- Created `src/containers/WorkspaceContainer.js` pure application orchestration container for role permission evaluation (`canAccessSection`), menu navigation filtering (`getAvailableMenus`), and workspace routing resolution (`resolveWorkspaceRoute`).
+- Refactored `Workspace.jsx` navigation sidebar to delegate authorization decisions to `WorkspaceContainer`, reducing `Workspace.jsx` size from 1,226 LOC to 1,219 LOC.
+- Executed Wave 3.QG Quality Gate, fixing bugs, cleaning up unused variables, and reducing lint warnings from 92 to 73. Created `10-quality-gate-report.md`.
 

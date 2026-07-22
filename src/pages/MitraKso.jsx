@@ -60,7 +60,7 @@ export default function MitraKso() {
         };
 
         setPartners([newPartner, ...partners]);
-        setInvitationLink(`http://localhost:5173/kso-portal/invite?code=KSO-${newId}-SECURE`);
+        setInvitationLink(`${window.location.origin}/kso-portal/invite?code=KSO-${newId}-SECURE`);
         
         // Reset form
         setNewMitraName('');

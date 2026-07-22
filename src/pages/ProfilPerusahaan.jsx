@@ -1,16 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
     LayoutTemplate, Building2, FileSignature, Award, UserCheck, Network, 
-    Users2, Truck, Briefcase, FileDigit, ShieldCheck, Eye, FileDown, 
-    Check, Edit3, Trash2, Plus, Upload, X, AlertCircle, Sparkles, Loader2, RefreshCw
+    Users2, Truck, Briefcase, FileDigit, ShieldCheck, 
+    Check, Edit3, Trash2, Plus, X, AlertCircle, Sparkles, Loader2
 } from 'lucide-react';
 
-const INPUT_CLASS = "w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all";
-const SELECT_CLASS = "w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer";
 const LABEL_CLASS = "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5";
-const CARD_CLASS = "bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden";
 const BTN_PRIMARY = "inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all shadow-sm cursor-pointer";
-const BTN_OUTLINE = "inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 transition-all cursor-pointer";
 
 export default function ProfilPerusahaan() {
     const [activeTab, setActiveTab] = useState('tab-company');

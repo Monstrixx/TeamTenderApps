@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, FileText, CheckCircle2, Clock, Building2, Eye, Download, Info } from 'lucide-react';
+import { ShieldCheck, FileText, CheckCircle2, Clock, Building2, Eye, Download, Info, Sparkles } from 'lucide-react';
 
 export default function ValidationPage() {
     const [loading, setLoading] = useState(true);

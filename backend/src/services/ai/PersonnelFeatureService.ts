@@ -1,5 +1,5 @@
-import PersonnelRepository from '../repositories/PersonnelRepository';
-import prisma from '../database/prisma';
+import PersonnelRepository from '../../repositories/PersonnelRepository';
+import prisma from '../../database/prisma';
 
 export class PersonnelFeatureService {
   /**
@@ -7,7 +7,7 @@ export class PersonnelFeatureService {
    * This is a structured snapshot before passing to an Embedding model.
    */
   public static async generateFeatureVector(personnelId: string) {
-    const personnel = await PersonnelRepository.findById(personnelId);
+    const personnel = await PersonnelRepository.findProfile(personnelId);
     
     if (!personnel) {
       throw new Error(`Personnel not found for ID: ${personnelId}`);
@@ -21,20 +21,20 @@ export class PersonnelFeatureService {
     
     // SKK metrics
     const now = new Date();
-    const activeSKK = (personnel.skk || []).filter(s => new Date(s.expiredDate) > now).length;
-    const expiredSKK = (personnel.skk || []).filter(s => new Date(s.expiredDate) <= now).length;
+    const activeSKK = (personnel.skk || []).filter((s: any) => new Date(s.expiredDate) > now).length;
+    const expiredSKK = (personnel.skk || []).filter((s: any) => new Date(s.expiredDate) <= now).length;
     
     // Verified skills
     const verifiedSkills = (personnel as any).skills?.filter((s: any) => s.verified).length || 0;
     
     const totalYearsExperience = (personnel as any).skills?.reduce((acc: number, skill: any) => acc + (skill.yearsOfExperience || 0), 0) || 0;
     
-    const highestProjectValue = personnel.experiences?.reduce((max, exp) => {
+    const highestProjectValue = personnel.experiences?.reduce((max: number, exp: any) => {
       const val = exp.projectValue ? Number(exp.projectValue) : 0;
       return val > max ? val : max;
     }, 0);
 
-    const managementExperience = personnel.experiences?.some(exp => 
+    const managementExperience = personnel.experiences?.some((exp: any) => 
       exp.position.toLowerCase().includes('manager') || 
       exp.position.toLowerCase().includes('direktur') ||
       exp.position.toLowerCase().includes('lead')
@@ -43,8 +43,8 @@ export class PersonnelFeatureService {
     // Build raw text snapshot for AI vectorization
     const rawText = JSON.stringify({
       skills: (personnel as any).skills?.map((s: any) => s.skillName),
-      experiences: personnel.experiences?.map(e => e.position),
-      educations: personnel.educations?.map(e => e.major)
+      experiences: personnel.experiences?.map((e: any) => e.position),
+      educations: personnel.educations?.map((e: any) => e.major)
     });
 
     // 2. Upsert into database

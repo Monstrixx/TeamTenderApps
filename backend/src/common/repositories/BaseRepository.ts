@@ -72,4 +72,16 @@ export abstract class BaseRepository<T, TQuery extends QueryOptions = QueryOptio
       },
     });
   }
+
+  async create(data: any): Promise<T> {
+    return this.model.create({ data });
+  }
+
+  async update(id: string, data: any): Promise<T> {
+    return this.model.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<T> {
+    return this.model.delete({ where: { id } });
+  }
 }

@@ -24,7 +24,7 @@ export class PersonnelController {
 
   public static async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const personnel = await PersonnelService.getPersonnelById(id);
       res.status(200).json(personnel);
     } catch (error) {
@@ -34,7 +34,7 @@ export class PersonnelController {
 
   public static async getProfile(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const profile = await PersonnelService.getPersonnelProfile(id);
       res.status(200).json(profile);
     } catch (error) {
@@ -44,7 +44,7 @@ export class PersonnelController {
 
   public static async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const personnel = await PersonnelService.updatePersonnel(id, req.body);
       res.status(200).json(personnel);
     } catch (error) {
@@ -54,7 +54,7 @@ export class PersonnelController {
 
   public static async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const personnel = await PersonnelService.deletePersonnel(id);
       res.status(200).json(personnel);
     } catch (error) {
@@ -64,7 +64,7 @@ export class PersonnelController {
 
   public static async restore(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const personnel = await PersonnelService.restorePersonnel(id);
       res.status(200).json(personnel);
     } catch (error) {
@@ -74,7 +74,7 @@ export class PersonnelController {
 
   public static async verifySKK(req: Request, res: Response, next: NextFunction) {
     try {
-      const { skkId } = req.params;
+      const skkId = req.params.skkId as string;
       const skk = await PersonnelSKKService.verifySKK(skkId);
       res.status(200).json(skk);
     } catch (error) {

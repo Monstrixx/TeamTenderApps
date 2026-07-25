@@ -14,6 +14,7 @@ import cookieParser from 'cookie-parser';
 import routes from './routes';
 import { registerListeners } from './listeners';
 import { requestContextMiddleware } from './common/context/RequestContext';
+import { PathResolver } from './common/utils/PathResolver';
 
 const app = express();
 
@@ -70,13 +71,13 @@ app.use(
 );
 
 // Swagger Documentation
-const swaggerPath = path.join(__dirname, '../../teamtender-react/docs/api/openapi.yaml');
+const swaggerPath = PathResolver.apiDocs();
 SwaggerParser.bundle(swaggerPath)
   .then((swaggerDocument) => {
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
   })
-  .catch((error) => {
-    logger.warn(error, 'Swagger documentation not found or failed to load. Ensure path is correct.');
+  .catch(() => {
+    logger.warn(`Swagger documentation not found or invalid at ${swaggerPath}. Skipping Swagger UI.`);
   });
 
 // Routes

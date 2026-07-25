@@ -6,8 +6,17 @@ import { logger } from '../../utils/logger';
 export class NodeEventDispatcher implements DomainEventDispatcher {
   private emitter = new EventEmitter();
 
+  public static getInstance(): NodeEventDispatcher {
+    return eventDispatcher;
+  }
+
   emit(event: DomainEvent): void {
     this.emitter.emit(event.name, event);
+  }
+
+  // Alias for emit
+  dispatch(eventName: string, payload: any): void {
+    this.emitter.emit(eventName, { name: eventName, ...payload });
   }
 
   subscribe(eventName: string, listener: (event: DomainEvent) => Promise<void> | void): void {

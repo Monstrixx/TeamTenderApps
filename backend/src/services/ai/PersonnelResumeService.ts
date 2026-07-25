@@ -45,7 +45,7 @@ export class PersonnelResumeService {
    * If tenderId is provided, AI will customize the CV for that specific tender.
    */
   public static async generateCV(options: ResumeGenerationOptions): Promise<ResumeResult> {
-    const personnel = await PersonnelRepository.findById(options.personnelId);
+    const personnel = await PersonnelRepository.findProfile(options.personnelId);
     
     if (!personnel) {
       throw new ApiError(404, 'Personnel not found');

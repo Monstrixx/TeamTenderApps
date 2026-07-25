@@ -18,7 +18,7 @@ export class TenderEvaluationService {
       where: { tenderId, supplierId }
     });
 
-    const totalScore = this.calculateTotal(data.technicalScore, data.financialScore, data.manualScore, existing?.aiFinalScore || 0);
+    const totalScore = this.calculateTotal(data.technicalScore, data.financialScore, data.manualScore, Number(existing?.aiFinalScore || 0));
 
     if (existing) {
       return prisma.tenderEvaluation.update({

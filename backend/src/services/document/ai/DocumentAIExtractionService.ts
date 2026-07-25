@@ -20,7 +20,7 @@ export class DocumentAIExtractionService {
     await new Promise(resolve => setTimeout(resolve, 1200));
 
     // Simple heuristic mock
-    let classification = DocumentClassification.OTHER;
+    let classification: DocumentClassification = DocumentClassification.OTHER;
     if (rawText.toLowerCase().includes('contract') || rawText.toLowerCase().includes('kontrak')) {
       classification = DocumentClassification.CONTRACT;
     } else if (rawText.toLowerCase().includes('identity') || rawText.toLowerCase().includes('ktp')) {

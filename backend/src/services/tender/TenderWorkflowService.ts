@@ -1,4 +1,4 @@
-import { TenderStatus } from '@prisma/client';
+import { TenderStatus, TenderSupplierStatus } from '@prisma/client';
 import TenderRepository from '../../repositories/TenderRepository';
 import TenderValidationService from './TenderValidationService';
 import { NodeEventDispatcher } from '../../common/events/NodeEventDispatcher';
@@ -45,13 +45,13 @@ export class TenderWorkflowService {
     // Update Winning Supplier
     await prisma.tenderSupplier.updateMany({
       where: { tenderId, supplierId },
-      data: { status: 'WINNER' }
+      data: { status: TenderSupplierStatus.WINNER }
     });
     
     // Update Losing Suppliers
     await prisma.tenderSupplier.updateMany({
-      where: { tenderId, supplierId: { not: supplierId }, status: { notIn: ['REJECTED', 'WITHDRAWN'] } },
-      data: { status: 'REJECTED' } // Or another status if needed
+      where: { tenderId, supplierId: { not: supplierId }, status: { notIn: [TenderSupplierStatus.REJECTED] } },
+      data: { status: TenderSupplierStatus.REJECTED } // Or another status if needed
     });
 
     this.eventDispatcher.dispatch(EventNames.TENDER_AWARDED, { 

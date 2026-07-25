@@ -45,6 +45,10 @@ This document outlines the setup procedure for the TeamTender Backend Foundation
 - Authentication is structured but not yet fully wired to all endpoints (scheduled for Wave 5.2).
 - Prisma migration cannot be run if a local PostgreSQL instance or Docker is unavailable. The schema is pre-defined in `prisma/schema.prisma`.
 
+## Documentation
+- The backend serves OpenAPI documentation at `/api-docs`.
+- The `openapi.yaml` path is dynamically resolved via `PathResolver` to support both development (`src`) and production (`dist`) runs.
+- If the OpenAPI file is absent, the backend skips Swagger UI gracefully.
+
 ## Future Enhancements
-- Migration to a Monorepo structure using Turborepo or Nx for tighter frontend/backend integration.
 - Full CI/CD pipeline integration for backend tests.

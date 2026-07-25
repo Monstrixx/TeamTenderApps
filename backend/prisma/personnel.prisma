@@ -1,0 +1,241 @@
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum Religion {
+  ISLAM
+  CHRISTIAN
+  CATHOLIC
+  HINDU
+  BUDDHIST
+  CONFUCIAN
+  OTHER
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+enum PersonnelStatus {
+  ACTIVE
+  INACTIVE
+  TERMINATED
+}
+
+enum EducationLevel {
+  SD
+  SMP
+  SMA
+  SMK
+  D3
+  D4
+  S1
+  S2
+  S3
+}
+
+enum DocumentType {
+  KTP
+  KK
+  NPWP
+  IJAZAH
+  SKK
+  SERTIFIKAT
+  PAKLARING
+  SIM
+  PASSPORT
+  BPJS
+  PHOTO
+  OTHER
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  FAILED
+  EXPIRED
+}
+
+model Personnel {
+  id              String   @id @default(cuid())
+
+  workspaceId     String
+  workspace       Workspace @relation(fields: [workspaceId], references: [id])
+
+  companyId       String
+  company         Company   @relation(fields: [companyId], references: [id])
+
+  code            String    @unique
+  slug            String    @unique
+  version         Int       @default(1)
+
+  employeeNumber  String?
+  nik             String?
+  fullName        String
+  birthPlace      String?
+  birthDate       DateTime?
+  gender          Gender?
+  religion        Religion?
+  maritalStatus   MaritalStatus?
+
+  email           String?
+  phone           String?
+  address         String?
+  photo           String?
+
+  status          PersonnelStatus @default(ACTIVE)
+
+  normalizedName  String?   @db.VarChar(255)
+  searchKeywords  String?   @db.Text
+  aliases         Json?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  createdBy       String?
+  updatedBy       String?
+  deletedBy       String?
+
+  educations      PersonnelEducation[]
+  experiences     PersonnelExperience[]
+  skk             PersonnelSKK[]
+  documents       PersonnelDocument[]
+  tenderDocuments TenderPersonnelDocument[]
+  assignments     PersonnelAssignment[]
+  embeddings      PersonnelEmbedding[]
+
+  @@index([workspaceId])
+  @@index([companyId])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+model PersonnelEducation {
+  id              String   @id @default(cuid())
+  personnelId     String
+  personnel       Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+  
+  level           EducationLevel
+  major           String?
+  institution     String
+  graduationYear  Int
+  gpa             Decimal?
+  documentId      String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([personnelId])
+}
+
+model PersonnelExperience {
+  id              String   @id @default(cuid())
+  personnelId     String
+  personnel       Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+  
+  companyName     String
+  position        String
+  projectName     String?
+  projectValue    Decimal?
+  durationMonths  Int?
+  ownerName       String?
+  referenceName   String?
+  referenceContact String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([personnelId])
+}
+
+model PersonnelSKK {
+  id              String   @id @default(cuid())
+  personnelId     String
+  personnel       Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+  
+  certificateNumber String
+  qualification   String
+  subClassification String?
+  level           String?
+  issuer          String
+  issuedDate      DateTime
+  expiredDate     DateTime
+  documentId      String?
+  
+  verificationStatus   VerificationStatus @default(PENDING)
+  verificationSource   String?
+  verificationTime     DateTime?
+  verificationReference String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([personnelId])
+}
+
+model PersonnelDocument {
+  id              String   @id @default(cuid())
+  personnelId     String
+  personnel       Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+  
+  type            DocumentType
+  documentId      String
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([personnelId])
+}
+
+model TenderPersonnelDocument {
+  id              String   @id @default(cuid())
+  personnelId     String
+  personnel       Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+  
+  tenderId        String?
+  documentType    String
+  documentId      String
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([personnelId])
+}
+
+model PersonnelAssignment {
+  id              String   @id @default(cuid())
+  personnelId     String
+  personnel       Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+  
+  tenderId        String?
+  projectId       String?
+  role            String
+  startDate       DateTime?
+  finishDate      DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([personnelId])
+}
+
+model PersonnelEmbedding {
+  id              String   @id @default(cuid())
+  personnelId     String
+  personnel       Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+
+  provider        String
+  model           String
+  dimension       Int
+  version         Int      @default(1)
+
+  generatedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  
+  @@index([personnelId])
+}

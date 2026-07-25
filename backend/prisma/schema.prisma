@@ -1,0 +1,1578 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  username      String?        @unique
+  passwordHash  String
+  name          String
+  tokenVersion  Int            @default(0)
+  lastLogin     DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  roles         UserRole[]
+  workspaces    Workspace[]
+  refreshTokens RefreshToken[]
+}
+
+model Role {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  roles       RolePermission[]
+}
+
+model UserRole {
+  id        String   @id @default(uuid())
+  userId    String
+  roleId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String
+  permissionId String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
+
+enum WorkspaceStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+model Workspace {
+  id String @id @default(cuid())
+
+  code        String  @unique
+  name        String
+  description String?
+
+  status WorkspaceStatus @default(ACTIVE)
+
+  ownerId String
+
+  settings Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deletedAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  companies  Company[]
+  suppliers  Supplier[]
+  personnels Personnel[]
+
+  @@index([status])
+  @@index([ownerId])
+  @@index([deletedAt])
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String
+  deviceId  String?
+  ipAddress String?
+  userAgent String?
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum AuditLevel {
+  INFO
+  WARNING
+  SECURITY
+  SYSTEM
+}
+
+model AuditLog {
+  id String @id @default(cuid())
+
+  event      String
+  level      AuditLevel @default(INFO)
+  entityType String
+  entityId   String?
+
+  workspaceId String?
+  userId      String?
+
+  requestId     String?
+  correlationId String?
+
+  ipAddress String?
+  userAgent String?
+
+  payload Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([workspaceId])
+  @@index([userId])
+  @@index([entityType])
+  @@index([createdAt])
+}
+
+enum CompanyStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum CompanyBusinessType {
+  PT
+  CV
+  UD
+  BUMN
+  BUMD
+  YAYASAN
+  KOPERASI
+  LAINNYA
+}
+
+enum AddressType {
+  HEAD_OFFICE
+  BRANCH
+  PROJECT
+  WAREHOUSE
+}
+
+model Company {
+  id String @id @default(cuid())
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  code         String              @unique
+  slug         String              @unique
+  name         String
+  legalName    String?
+  version      Int                 @default(1)
+  businessType CompanyBusinessType
+  status       CompanyStatus
+
+  email           String?
+  phone           String?
+  website         String?
+  logoUrl         String?
+  description     String?
+  establishedDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deletedAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  addresses CompanyAddress[]
+  legal     CompanyLegal?
+
+  // Future Relations (Wave 6+)
+  suppliers  Supplier[]
+  // personnel    Personnel[]
+  // equipment    Equipment[]
+  documents  CompanyDocument[]
+  // certifications Certification[]
+  // experience   Experience[]
+  // financialReports FinancialReport[]
+  // licenses     License[]
+  personnels Personnel[]
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+model CompanyLegal {
+  id        String  @id @default(cuid())
+  companyId String  @unique
+  company   Company @relation(fields: [companyId], references: [id])
+
+  nib                    String?
+  npwp                   String?
+  pkpNumber              String?
+  deedNumber             String?
+  deedDate               DateTime?
+  ministryApprovalNumber String?
+  ministryApprovalDate   DateTime?
+
+  taxOffice      String?
+  businessSector String?
+  kbli           String?
+  capital        Decimal?
+  employeeCount  Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CompanyAddress {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  type       AddressType
+  province   String
+  city       String
+  district   String
+  village    String
+  postalCode String
+  address    String
+  latitude   Float?
+  longitude  Float?
+  isPrimary  Boolean     @default(false)
+}
+
+enum CompanyDocumentType {
+  DEED_OF_ESTABLISHMENT
+  MINISTRY_APPROVAL
+  NIB
+  NPWP
+  SKT
+  SPPKP
+  BUSINESS_LICENSE
+  OTHER
+}
+
+model CompanyDocument {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  type       CompanyDocumentType
+  documentId String
+  document   Document            @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([documentId])
+}
+
+// ==========================================
+// SUPPLIER DOMAIN (Wave 5.5)
+// ==========================================
+
+enum SupplierStatus {
+  ACTIVE
+  INACTIVE
+  BLACKLISTED
+  ARCHIVED
+}
+
+enum SupplierCategory {
+  CONTRACTOR
+  CONSULTANT
+  MANUFACTURER
+  DISTRIBUTOR
+  SERVICE
+  OTHER
+}
+
+enum SupplierBusinessType {
+  PT
+  CV
+  UD
+  BUMN
+  BUMD
+  YAYASAN
+  KOPERASI
+  LAINNYA
+}
+
+model Supplier {
+  id String @id @default(cuid())
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  code    String @unique
+  slug    String @unique
+  version Int    @default(1)
+
+  name         String
+  displayName  String?
+  businessType SupplierBusinessType
+  category     SupplierCategory
+  status       SupplierStatus
+
+  email       String?
+  phone       String?
+  website     String?
+  logoUrl     String?
+  description String?
+
+  profileScore   Int     @default(0)
+  normalizedName String? @db.VarChar(255)
+  searchKeywords String? @db.Text
+  aliases        Json?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  contacts     SupplierContact[]
+  bankAccounts SupplierBankAccount[]
+  tax          SupplierTax?
+
+  qualifications  SupplierQualification[]
+  experiences     SupplierExperience[]
+  rating          SupplierRating?
+  embeddings      SupplierEmbedding[]
+  tenderSuppliers TenderSupplier[]
+
+  @@index([workspaceId])
+  @@index([companyId])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+model SupplierContact {
+  id         String   @id @default(cuid())
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  fullName    String
+  position    String?
+  email       String?
+  phone       String?
+  mobilePhone String?
+  department  String?
+  notes       String?
+  isPrimary   Boolean @default(false)
+
+  @@index([supplierId])
+}
+
+model SupplierBankAccount {
+  id         String   @id @default(cuid())
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  bankName      String
+  bankBranch    String?
+  accountNumber String
+  accountHolder String
+  swiftCode     String?
+  currency      String  @default("IDR")
+  isPrimary     Boolean @default(false)
+
+  @@index([supplierId])
+}
+
+model SupplierTax {
+  id         String   @id @default(cuid())
+  supplierId String   @unique
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  npwp      String?
+  pkpNumber String?
+  taxOffice String?
+}
+
+enum QualificationType {
+  SIBUJK
+  ISO
+  SBU
+  NIB
+  NPWP
+  OTHER
+}
+
+enum QualificationStatus {
+  PENDING
+  VERIFIED
+  EXPIRED
+  REJECTED
+}
+
+model SupplierQualification {
+  id         String   @id @default(cuid())
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  type           QualificationType
+  documentNumber String?
+  issuer         String?
+  validFrom      DateTime?
+  validUntil     DateTime?
+  fileId         String?
+  file           Document?         @relation(fields: [fileId], references: [id], onDelete: SetNull)
+
+  status     QualificationStatus @default(PENDING)
+  verifiedBy String?
+  verifiedAt DateTime?
+  remarks    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([supplierId])
+  @@index([fileId])
+}
+
+enum ProjectCategory {
+  BUILDING
+  ROAD
+  BRIDGE
+  IRRIGATION
+  ELECTRICAL
+  MECHANICAL
+  IT
+  OTHER
+}
+
+model SupplierExperience {
+  id         String   @id @default(cuid())
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  projectName      String
+  ownerName        String
+  contractValue    Decimal?
+  currency         String    @default("IDR")
+  exchangeRate     Decimal?
+  exchangeRateDate DateTime?
+  completionYear   Int?
+  bastDate         DateTime?
+  bastNumber       String?
+
+  projectLocation  String?
+  clientType       String?
+  projectCategory  ProjectCategory?
+  scopeOfWork      String?
+  referenceContact String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([supplierId])
+}
+
+model SupplierRating {
+  id         String   @id @default(cuid())
+  supplierId String   @unique
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  quality        Decimal  @default(0)
+  delivery       Decimal  @default(0)
+  administration Decimal  @default(0)
+  finance        Decimal  @default(0)
+  overall        Decimal? // Derived field computed by service
+
+  evaluationMethod String?
+  evaluatedBy      String?
+  evaluationNotes  String?
+
+  lastEvaluatedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SupplierEmbedding {
+  id         String   @id @default(cuid())
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  provider  String
+  model     String
+  dimension Int
+
+  createdAt DateTime @default(now())
+
+  @@index([supplierId])
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum Religion {
+  ISLAM
+  CHRISTIAN
+  CATHOLIC
+  HINDU
+  BUDDHIST
+  CONFUCIAN
+  OTHER
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+enum PersonnelStatus {
+  ACTIVE
+  INACTIVE
+  TERMINATED
+}
+
+enum EducationLevel {
+  SD
+  SMP
+  SMA
+  SMK
+  D3
+  D4
+  S1
+  S2
+  S3
+}
+
+enum DocumentType {
+  KTP
+  KK
+  NPWP
+  IJAZAH
+  SKK
+  SERTIFIKAT
+  PAKLARING
+  SIM
+  PASSPORT
+  BPJS
+  PHOTO
+  OTHER
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  FAILED
+  EXPIRED
+}
+
+enum ProviderType {
+  LPJK
+  BNSP
+  PUPR
+  MANUAL
+  MOCK
+}
+
+enum SkillCategory {
+  TECHNICAL
+  MANAGEMENT
+  SOFT_SKILL
+  LANGUAGE
+  OTHER
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum SkillSource {
+  SELF_DECLARATION
+  SKK
+  TRAINING
+  PROJECT_EXPERIENCE
+  MANUAL_VERIFICATION
+}
+
+model Personnel {
+  id String @id @default(cuid())
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  code    String @unique
+  slug    String @unique
+  version Int    @default(1)
+
+  employeeNumber String?
+  nik            String?
+  fullName       String
+  birthPlace     String?
+  birthDate      DateTime?
+  gender         Gender?
+  religion       Religion?
+  maritalStatus  MaritalStatus?
+
+  email   String?
+  phone   String?
+  address String?
+  photo   String?
+
+  status PersonnelStatus @default(ACTIVE)
+
+  normalizedName String? @db.VarChar(255)
+  searchKeywords String? @db.Text
+  aliases        Json?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  educations                 PersonnelEducation[]
+  experiences                PersonnelExperience[]
+  skk                        PersonnelSKK[]
+  documents                  PersonnelDocument[]
+  tenderDocuments            TenderPersonnelDocument[]
+  assignments                PersonnelAssignment[]
+  embeddings                 PersonnelEmbedding[]
+  skills                     PersonnelSkill[]
+  featureVector              PersonnelFeatureVector?
+  tenderPersonnelAssignments TenderPersonnelAssignment[]
+
+  @@index([workspaceId])
+  @@index([companyId])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+model PersonnelEducation {
+  id          String    @id @default(cuid())
+  personnelId String
+  personnel   Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+
+  level          EducationLevel
+  major          String?
+  institution    String
+  graduationYear Int
+  gpa            Decimal?
+  documentId     String?
+  document       Document?      @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([personnelId])
+  @@index([documentId])
+}
+
+model PersonnelExperience {
+  id          String    @id @default(cuid())
+  personnelId String
+  personnel   Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+
+  companyName      String
+  position         String
+  projectName      String?
+  projectValue     Decimal?
+  durationMonths   Int?
+  ownerName        String?
+  referenceName    String?
+  referenceContact String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([personnelId])
+}
+
+model PersonnelSKK {
+  id          String    @id @default(cuid())
+  personnelId String
+  personnel   Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+
+  certificateNumber String
+  qualification     String
+  subClassification String?
+  level             String?
+  issuer            String
+  issuedDate        DateTime
+  expiredDate       DateTime
+  documentId        String?
+  document          Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  verificationStatus    VerificationStatus @default(PENDING)
+  verificationSource    String?
+  verificationTime      DateTime?
+  verificationReference String?
+
+  history PersonnelSKKHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([personnelId])
+}
+
+model PersonnelDocument {
+  id          String    @id @default(cuid())
+  personnelId String
+  personnel   Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+
+  type       DocumentType
+  documentId String
+  document   Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([personnelId])
+  @@index([documentId])
+}
+
+model TenderPersonnelDocument {
+  id          String    @id @default(cuid())
+  personnelId String
+  personnel   Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+
+  tenderId     String?
+  documentType String
+  documentId   String
+  document     Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([personnelId])
+  @@index([documentId])
+}
+
+model PersonnelAssignment {
+  id          String    @id @default(cuid())
+  personnelId String
+  personnel   Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+
+  tenderId   String?
+  projectId  String?
+  role       String
+  startDate  DateTime?
+  finishDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([personnelId])
+}
+
+model PersonnelEmbedding {
+  id          String    @id @default(cuid())
+  personnelId String
+  personnel   Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+
+  provider  String
+  model     String
+  dimension Int
+  version   Int    @default(1)
+
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([personnelId])
+}
+
+model PersonnelSKKHistory {
+  id    String       @id @default(cuid())
+  skkId String
+  skk   PersonnelSKK @relation(fields: [skkId], references: [id], onDelete: Cascade)
+
+  certificateNumber String
+  qualification     String
+  subClassification String?
+  level             String?
+  issuer            String
+  issuedDate        DateTime
+  expiredDate       DateTime
+  documentId        String?
+  document          Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  verificationStatus    VerificationStatus @default(PENDING)
+  verificationReference String?
+
+  changeReason String?
+
+  createdAt DateTime @default(now())
+
+  @@index([skkId])
+}
+
+model PersonnelSkill {
+  id          String    @id @default(cuid())
+  personnelId String
+  personnel   Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+
+  skillName         String
+  category          SkillCategory @default(OTHER)
+  level             SkillLevel    @default(INTERMEDIATE)
+  yearsOfExperience Int?
+
+  verified   Boolean     @default(false)
+  verifiedBy String?
+  verifiedAt DateTime?
+  source     SkillSource @default(SELF_DECLARATION)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([personnelId])
+}
+
+model PersonnelFeatureVector {
+  id          String    @id @default(cuid())
+  personnelId String    @unique
+  personnel   Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+
+  projectCount         Int      @default(0)
+  highestEducation     String?
+  activeSKK            Int      @default(0)
+  expiredSKK           Int      @default(0)
+  verifiedSkills       Int      @default(0)
+  totalYearsExperience Int      @default(0)
+  highestProjectValue  Decimal?
+  managementExperience Boolean  @default(false)
+
+  rawText        String? @db.Text
+  featureVersion Int     @default(1)
+
+  generatedAt DateTime @default(now())
+
+  @@index([personnelId])
+}
+
+model ResumeTemplate {
+  id String @id @default(cuid())
+
+  name            String
+  version         Int    @default(1)
+  owner           String // e.g. "SYSTEM" or "USER"
+  supportedFormat String // JSON string e.g. '["HTML", "PDF", "DOCX"]'
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==========================================
+// WAVE 5.7: INTELLIGENT DOCUMENT PLATFORM
+// ==========================================
+
+enum DocumentStatus {
+  UPLOADED
+  HASHED
+  SCANNED
+  OCR_COMPLETED
+  CLASSIFIED
+  VERIFIED
+  SIGNED
+  ARCHIVED
+  EXPIRED
+}
+
+enum DocumentClassification {
+  IDENTITY
+  LEGAL
+  CERTIFICATE
+  CONTRACT
+  FINANCIAL
+  TECHNICAL
+  PHOTO
+  OTHER
+}
+
+enum MetadataValueType {
+  STRING
+  NUMBER
+  DATE
+  BOOLEAN
+  JSON
+}
+
+enum DocumentStorageProvider {
+  LOCAL
+  S3
+  GCS
+  AZURE
+}
+
+model Document {
+  id               String                  @id @default(cuid())
+  workspaceId      String
+  companyId        String?
+  code             String                  @unique
+  slug             String                  @unique
+  version          Int                     @default(1)
+  status           DocumentStatus          @default(UPLOADED)
+  mimeType         String
+  extension        String
+  size             Int
+  sha256           String
+  storageProvider  DocumentStorageProvider @default(LOCAL)
+  providerVersion  String?
+  storageKey       String
+  originalFilename String
+  displayName      String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  versions      DocumentVersion[]
+  metadata      DocumentMetadata[]
+  permissions   DocumentPermission[]
+  featureVector DocumentFeatureVector?
+  embeddings    DocumentEmbedding[]
+
+  // Relations to other aggregates
+  companyDocuments         CompanyDocument[]
+  personnelDocuments       PersonnelDocument[]
+  tenderPersonnelDocuments TenderPersonnelDocument[]
+  personnelSKKs            PersonnelSKK[]
+  skkHistories             PersonnelSKKHistory[]
+  personnelEducations      PersonnelEducation[]
+  supplierQualifications   SupplierQualification[]
+  equipmentCertifications  EquipmentCertification[]
+  equipmentMaintenances    EquipmentMaintenance[]
+  equipmentDocuments       EquipmentDocument[]
+  tenderDocuments          TenderDocument[]
+
+  @@index([workspaceId])
+  @@index([companyId])
+  @@index([sha256])
+}
+
+model DocumentVersion {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  versionNumber Int
+  storageKey    String
+  sha256        String
+  size          Int
+  changeReason  String?
+
+  createdAt DateTime @default(now())
+
+  @@index([documentId])
+}
+
+model DocumentMetadata {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  key       String
+  value     String            @db.Text
+  valueType MetadataValueType @default(STRING)
+
+  @@index([documentId])
+}
+
+enum EntityType {
+  WORKSPACE
+  COMPANY
+  PERSONNEL
+  TENDER
+}
+
+model DocumentPermission {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  entityType  EntityType
+  entityId    String
+  accessLevel String // e.g. READ, WRITE, ADMIN
+  inherited   Boolean    @default(true)
+
+  @@index([documentId])
+  @@index([entityType, entityId])
+}
+
+model DocumentFeatureVector {
+  id         String   @id @default(cuid())
+  documentId String   @unique
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  classification           DocumentClassification?
+  classificationConfidence Decimal?
+  ocrCompleteness          Decimal?
+
+  language          String?
+  pageCount         Int?
+  containsSignature Boolean @default(false)
+  containsStamp     Boolean @default(false)
+  containsQRCode    Boolean @default(false)
+  containsTable     Boolean @default(false)
+
+  extractedEntitiesJSON String? @db.Text
+
+  generatedAt DateTime @default(now())
+}
+
+model DocumentEmbedding {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  provider  String
+  model     String
+  dimension Int
+  version   Int    @default(1)
+
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([documentId])
+}
+
+// ==========================================
+// WAVE 5.8: EQUIPMENT & ASSET DOMAIN
+// ==========================================
+
+enum OperationalStatus {
+  AVAILABLE
+  ASSIGNED
+  IN_USE
+  MAINTENANCE
+  OUT_OF_SERVICE
+  RETIRED
+}
+
+enum OwnershipStatus {
+  OWNED
+  LEASED
+  RENTED
+  BORROWED
+}
+
+model EquipmentCategory {
+  id          String  @id @default(cuid())
+  workspaceId String
+  code        String?
+  name        String
+  description String?
+  isActive    Boolean @default(true)
+
+  parentId String?
+  parent   EquipmentCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children EquipmentCategory[] @relation("CategoryHierarchy")
+
+  equipment Equipment[]
+
+  @@index([workspaceId])
+  @@index([parentId])
+}
+
+model Equipment {
+  id          String @id @default(cuid())
+  workspaceId String
+  companyId   String
+
+  code    String @unique
+  slug    String @unique
+  version Int    @default(1)
+
+  name         String
+  brand        String
+  model        String
+  serialNumber String?
+  assetNumber  String?
+  categoryId   String
+
+  status    OperationalStatus @default(AVAILABLE)
+  ownership OwnershipStatus   @default(OWNED)
+
+  year            Int?
+  purchaseDate    DateTime?
+  purchasePrice   Decimal?
+  currentLocation String?
+  notes           String?   @db.Text
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  // Relations
+  category                   EquipmentCategory           @relation(fields: [categoryId], references: [id])
+  specifications             EquipmentSpecification[]
+  certifications             EquipmentCertification[]
+  maintenance                EquipmentMaintenance[]
+  usage                      EquipmentUsage[]
+  assignments                EquipmentAssignment[]
+  documents                  EquipmentDocument[]
+  featureVector              EquipmentFeatureVector?
+  embeddings                 EquipmentEmbedding[]
+  tenderEquipmentAssignments TenderEquipmentAssignment[]
+
+  @@index([workspaceId])
+  @@index([companyId])
+  @@index([categoryId])
+  @@index([status])
+}
+
+model EquipmentSpecification {
+  id          String    @id @default(cuid())
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  key   String
+  value String
+  unit  String?
+
+  @@index([equipmentId])
+}
+
+model EquipmentCertification {
+  id          String    @id @default(cuid())
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  certificateType   String // e.g., SIA, SILO, Calibration
+  certificateNumber String
+  issuedDate        DateTime
+  expiredDate       DateTime
+  issuingAuthority  String?
+
+  verificationStatus    VerificationStatus @default(PENDING)
+  verificationProvider  String?
+  verificationReference String?
+  verifiedAt            DateTime?
+
+  documentId String?
+  document   Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  @@index([equipmentId])
+  @@index([documentId])
+}
+
+model EquipmentMaintenance {
+  id          String    @id @default(cuid())
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  maintenanceType String
+  scheduledDate   DateTime?
+  completedDate   DateTime?
+  vendor          String?
+  totalCost       Decimal?  @default(0)
+  status          String? // e.g. PLANNED, IN_PROGRESS, COMPLETED
+
+  documentId String?
+  document   Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  items EquipmentMaintenanceItem[]
+
+  @@index([equipmentId])
+}
+
+model EquipmentMaintenanceItem {
+  id            String               @id @default(cuid())
+  maintenanceId String
+  maintenance   EquipmentMaintenance @relation(fields: [maintenanceId], references: [id], onDelete: Cascade)
+
+  itemName   String
+  itemType   String? // e.g. SPARE_PART, LABOR, SERVICE
+  quantity   Decimal @default(1)
+  unitPrice  Decimal @default(0)
+  totalPrice Decimal @default(0)
+
+  @@index([maintenanceId])
+}
+
+model EquipmentUsage {
+  id          String    @id @default(cuid())
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  tenderId  String?
+  operator  String?
+
+  startDate    DateTime
+  endDate      DateTime
+  workingHours Int      @default(0)
+  idleHours    Int      @default(0)
+
+  notes String?
+
+  createdAt DateTime @default(now())
+
+  @@index([equipmentId])
+}
+
+model EquipmentAssignment {
+  id          String    @id @default(cuid())
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  companyId   String?
+  personnelId String?
+  projectId   String?
+  tenderId    String?
+
+  assignedAt DateTime  @default(now())
+  releasedAt DateTime?
+
+  notes String?
+
+  @@index([equipmentId])
+}
+
+model EquipmentDocument {
+  id          String    @id @default(cuid())
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([equipmentId])
+  @@index([documentId])
+}
+
+model EquipmentFeatureVector {
+  id          String    @id @default(cuid())
+  equipmentId String    @unique
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  age                  Int     @default(0)
+  utilizationRate      Decimal @default(0.0)
+  maintenanceFrequency Int     @default(0)
+  downtimeRatio        Decimal @default(0.0)
+  activeCertificates   Int     @default(0)
+  replacementRisk      Decimal @default(0.0)
+
+  // Advanced predictive maintenance fields
+  averageMaintenanceCost Decimal @default(0.0)
+  averageRepairInterval  Int     @default(0) // in days
+  totalWorkingHours      Int     @default(0)
+  lastMaintenanceAge     Int     @default(0) // in days
+  certificateExpiryDays  Int     @default(0)
+
+  featureVersion Int     @default(1)
+  generatedBy    String?
+
+  generatedAt DateTime @default(now())
+}
+
+model EquipmentEmbedding {
+  id          String    @id @default(cuid())
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  provider  String
+  model     String
+  dimension Int
+  version   Int    @default(1)
+
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([equipmentId])
+}
+
+// ==========================================
+// WAVE 5.9: TENDER DOMAIN (ORCHESTRATOR)
+// ==========================================
+
+enum TenderStatus {
+  DRAFT
+  PUBLISHED
+  BIDDING
+  CLOSED
+  EVALUATION
+  NEGOTIATION
+  AWARDED
+  CONTRACTED
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum TenderDocumentType {
+  RFP
+  BOQ
+  DRAWING
+  ADDENDUM
+  BID
+  CONTRACT
+  MINUTES
+  OTHER
+}
+
+enum AssignmentStatus {
+  PROPOSED
+  APPROVED
+  REJECTED
+  REPLACED
+}
+
+enum TenderSupplierStatus {
+  INVITED
+  INTERESTED
+  BID_SUBMITTED
+  SHORTLISTED
+  REJECTED
+  WINNER
+}
+
+model Tender {
+  id          String @id @default(cuid())
+  workspaceId String
+  companyId   String
+
+  code    String @unique
+  slug    String @unique
+  version Int    @default(1)
+
+  title       String
+  description String?  @db.Text
+  budget      Decimal?
+  currency    String   @default("IDR")
+
+  // Expanded operational fields
+  procurementMethod    String?
+  procurementType      String?
+  estimatedDuration    Int? // in days
+  visibility           String  @default("PUBLIC") // PUBLIC or PRIVATE
+  confidentialityLevel String  @default("STANDARD")
+
+  status TenderStatus @default(DRAFT)
+
+  publishedAt         DateTime?
+  submissionDeadline  DateTime?
+  evaluationStartDate DateTime?
+  awardedAt           DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  // Orchestration relations
+  personnelRequirements TenderPersonnelRequirement[]
+  equipmentRequirements TenderEquipmentRequirement[]
+
+  suppliers   TenderSupplier[]
+  personnel   TenderPersonnelAssignment[]
+  equipment   TenderEquipmentAssignment[]
+  documents   TenderDocument[]
+  evaluations TenderEvaluation[]
+
+  @@index([workspaceId])
+  @@index([companyId])
+  @@index([status])
+}
+
+// --- Requirements ---
+
+model TenderPersonnelRequirement {
+  id       String @id @default(cuid())
+  tenderId String
+  tender   Tender @relation(fields: [tenderId], references: [id], onDelete: Cascade)
+
+  role               String
+  quantity           Int    @default(1)
+  minExperienceYears Int?
+
+  // Explicit relations instead of JSON
+  requiredSkills         TenderRequiredSkill[]
+  requiredCertifications TenderRequiredCertification[]
+
+  assignments TenderPersonnelAssignment[]
+
+  @@index([tenderId])
+}
+
+model TenderRequiredSkill {
+  id            String                     @id @default(cuid())
+  requirementId String
+  requirement   TenderPersonnelRequirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+
+  skillName String
+  minLevel  String? // e.g. INTERMEDIATE, ADVANCED
+
+  @@index([requirementId])
+}
+
+model TenderRequiredCertification {
+  id            String                     @id @default(cuid())
+  requirementId String
+  requirement   TenderPersonnelRequirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+
+  certificateType String
+  minLevel        String?
+
+  @@index([requirementId])
+}
+
+model TenderEquipmentRequirement {
+  id       String @id @default(cuid())
+  tenderId String
+  tender   Tender @relation(fields: [tenderId], references: [id], onDelete: Cascade)
+
+  categoryId  String? // Reference to EquipmentCategory if needed, or free text
+  category    String // e.g. "Excavator"
+  quantity    Int     @default(1)
+  minCapacity String?
+  minYear     Int?
+
+  assignments TenderEquipmentAssignment[]
+
+  @@index([tenderId])
+}
+
+// --- Suppliers & Assignments ---
+
+model TenderSupplier {
+  id       String @id @default(cuid())
+  tenderId String
+  tender   Tender @relation(fields: [tenderId], references: [id], onDelete: Cascade)
+
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+
+  status    TenderSupplierStatus @default(INVITED)
+  bidAmount Decimal?
+
+  invitedAt      DateTime?
+  viewedAt       DateTime?
+  submittedAt    DateTime?
+  withdrawnAt    DateTime?
+  disqualifiedAt DateTime?
+
+  @@index([tenderId])
+  @@index([supplierId])
+}
+
+model TenderPersonnelAssignment {
+  id       String @id @default(cuid())
+  tenderId String
+  tender   Tender @relation(fields: [tenderId], references: [id], onDelete: Cascade)
+
+  supplierId  String
+  personnelId String
+  personnel   Personnel @relation(fields: [personnelId], references: [id])
+
+  requirementId String?
+  requirement   TenderPersonnelRequirement? @relation(fields: [requirementId], references: [id])
+
+  assignmentStatus AssignmentStatus @default(PROPOSED)
+  proposedRate     Decimal?
+  aiMatchScore     Decimal? // For Wave 6
+
+  @@index([tenderId])
+  @@index([personnelId])
+}
+
+model TenderEquipmentAssignment {
+  id       String @id @default(cuid())
+  tenderId String
+  tender   Tender @relation(fields: [tenderId], references: [id], onDelete: Cascade)
+
+  supplierId  String
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
+
+  requirementId String?
+  requirement   TenderEquipmentRequirement? @relation(fields: [requirementId], references: [id])
+
+  assignmentStatus AssignmentStatus @default(PROPOSED)
+  proposedRate     Decimal?
+  aiMatchScore     Decimal? // For Wave 6
+
+  @@index([tenderId])
+  @@index([equipmentId])
+}
+
+// --- Documents & Evaluation ---
+
+model TenderDocument {
+  id       String @id @default(cuid())
+  tenderId String
+  tender   Tender @relation(fields: [tenderId], references: [id], onDelete: Cascade)
+
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id])
+
+  documentType TenderDocumentType @default(OTHER)
+  supplierId   String? // If uploaded by a bidding supplier
+
+  @@index([tenderId])
+  @@index([documentId])
+}
+
+model TenderEvaluation {
+  id       String @id @default(cuid())
+  tenderId String
+  tender   Tender @relation(fields: [tenderId], references: [id], onDelete: Cascade)
+
+  supplierId String
+
+  // Separated scoring dimensions
+  technicalScore Decimal @default(0)
+  financialScore Decimal @default(0)
+  manualScore    Decimal @default(0)
+
+  aiPersonnelScore Decimal @default(0)
+  aiEquipmentScore Decimal @default(0)
+  aiDocumentScore  Decimal @default(0)
+  aiRiskScore      Decimal @default(0)
+  aiFinalScore     Decimal @default(0)
+
+  totalScore Decimal @default(0)
+
+  evaluationNotes String?  @db.Text
+  evaluatedBy     String?
+  evaluatedAt     DateTime @default(now())
+
+  @@index([tenderId])
+  @@index([supplierId])
+}

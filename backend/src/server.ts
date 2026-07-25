@@ -1,0 +1,19 @@
+import app from './app';
+import { logger } from './utils/logger';
+
+const PORT = process.env.PORT || 3000;
+
+const server = app.listen(PORT, () => {
+  logger.info(`Server listening on port ${PORT}`);
+});
+
+const gracefulShutdown = () => {
+  logger.info('Shutting down server...');
+  server.close(() => {
+    logger.info('Server successfully closed');
+    process.exit(0);
+  });
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);

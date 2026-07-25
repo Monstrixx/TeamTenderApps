@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info:
+  title: TeamTender API
+  version: 1.0.0
+  description: API Documentation for TeamTender
+
+servers:
+  - url: /api/v1
+    description: V1 API
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  # Companies
+  /companies:
+    $ref: './company.openapi.yaml#/paths/~1companies'
+  /companies/{id}:
+    $ref: './company.openapi.yaml#/paths/~1companies~1{id}'
+  /companies/{id}/restore:
+    $ref: './company.openapi.yaml#/paths/~1companies~1{id}~1restore'
+  /companies/{id}/profile:
+    $ref: './company.openapi.yaml#/paths/~1companies~1{id}~1profile'

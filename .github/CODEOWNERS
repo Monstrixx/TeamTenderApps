@@ -1,0 +1,13 @@
+# TeamTender CODEOWNERS File
+
+# Global Owners
+* @Monstrixx
+
+# Architecture Frozen Core (Era-1, Era-2, Era-3)
+/backend/src/ai/kernel/ @Monstrixx
+/backend/src/ai/api/ @Monstrixx
+/backend/src/ai/platform/ @Monstrixx
+
+# Documentation Standards & Specifications
+/docs/ @Monstrixx
+/backend/docs/ @Monstrixx

@@ -1,0 +1,105 @@
+{
+  "id": "teamtender.plugin.document",
+  "version": "1.0.0",
+  "manifestVersion": "2.2",
+  "type": "Domain",
+  "domain": "Document Intelligence",
+  "owner": "TeamTender Enterprise",
+  "publisher": "TeamTender Global",
+  "vendor": "TeamTender Inc",
+  "license": "MIT",
+  "pricing": "Included",
+  "support": "LTS",
+  "homepage": "https://teamtender.app/plugins/document",
+  "documentation": "https://docs.teamtender.app/plugins/document",
+  "description": "Enterprise Domain Intelligence Plugin for Multi-Modal Document Extraction, Layout Preservation, OCR, Classification, and Semantic Citation.",
+  "distribution": "official",
+  "installation": "local",
+  "principleVersion": "Every intelligence artifact must be explainable, traceable, and reproducible from its original evidence.",
+
+  "capabilities": [
+    { "semanticId": "document.ocr.extract",          "version": "1.0.0", "lifecycle": "ACTIVE", "name": "Multi-Modal OCR & Layout Extractor", "enabled": true, "sla": { "maxLatencyMs": 3000, "availability": 0.999 } },
+    { "semanticId": "document.classifier.classify",   "version": "1.0.0", "lifecycle": "ACTIVE", "name": "Document Structure Classifier",     "enabled": true, "sla": { "maxLatencyMs": 1500, "availability": 0.999 } },
+    { "semanticId": "document.semantic.chunk",        "version": "1.0.0", "lifecycle": "ACTIVE", "name": "Layout-Preserved Semantic Chunker", "enabled": true, "sla": { "maxLatencyMs": 2000, "availability": 0.999 } },
+    { "semanticId": "document.compliance.scan",       "version": "1.0.0", "lifecycle": "ACTIVE", "name": "Document Compliance Scanner",       "enabled": true, "sla": { "maxLatencyMs": 2500, "availability": 0.999 } }
+  ],
+
+  "knowledgeSources": [
+    { "id": "document.knowledge.ocr-cache", "name": "OCR & Layout Cache", "type": "Structured", "freshness": "24h", "scheduler": "RuntimeScheduler" }
+  ],
+
+  "workflows": [
+    { "id": "document.workflow.ingestion", "version": "1.0.0", "name": "Explicit Document Ingestion DAG", "deterministic": true, "trigger": "DocumentUploaded" }
+  ],
+
+  "agents": [
+    { "id": "agent.document.parser", "name": "Document Parsing Agent", "model": "cognitive-v1", "tools": ["OCRExtractor", "LayoutParser"] }
+  ],
+
+  "policies": [
+    { "id": "document.policy.compliance", "name": "Document Compliance Policy", "engine": "PolicyEngine", "priority": 1 }
+  ],
+
+  "events": {
+    "published": [
+      "DocumentUploaded", "DocumentValidated", "OCRExtracted", "LayoutParsed",
+      "TableExtracted", "ClauseExtracted", "DocumentClassified",
+      "SemanticChunked", "ComplianceScanned", "DocumentKnowledgeIndexed"
+    ],
+    "consumed": []
+  },
+
+  "artifacts": [
+    { "type": "DocumentFingerprintArtifact",  "version": "1.0.0", "lineageTracked": true },
+    { "type": "LayoutArtifact",               "version": "1.0.0", "lineageTracked": true },
+    { "type": "ClassificationArtifact",       "version": "1.0.0", "lineageTracked": true },
+    { "type": "KnowledgePackageArtifact",     "version": "1.0.0", "lineageTracked": true },
+    { "type": "ComplianceReportArtifact",     "version": "1.0.0", "lineageTracked": true }
+  ],
+
+  "ui": {
+    "navigation": { "label": "Document Intelligence", "path": "/workspace/document", "icon": "document-icon" },
+    "pages": ["DocumentDashboard", "DocumentDetail", "OCRViewer", "SemanticCitationViewer"],
+    "widgets": ["ActiveDocumentsWidget", "ExtractionAccuracyWidget", "KnowledgeTraceabilityWidget"],
+    "commandPalette": ["Parse Document", "Extract Tables", "Generate Citations", "Scan Compliance"]
+  },
+
+  "telemetry": {
+    "platformMetrics": ["latency", "memory", "routing"],
+    "domainKPIs": [
+      "ocrAccuracy", "tableExtractionAccuracy", "clauseDetectionAccuracy",
+      "citationAccuracy", "knowledgeTraceability", "duplicateDetectionRate",
+      "knowledgeFreshnessScore", "humanValidationRate"
+    ]
+  },
+
+  "sla": {
+    "startupTimeMs": 100,
+    "healthCheckTimeMs": 10,
+    "maxMemoryMb": 512,
+    "maxCpuTimeMs": 10000,
+    "maxConcurrentAgents": 3,
+    "expectedResponseTimeMs": 500
+  },
+
+  "compatibility": {
+    "platformVersion": ">=1.0.0",
+    "runtimeVersion": ">=1.0.0",
+    "kernelVersion": ">=1.0.0",
+    "sdkVersion": ">=1.0.0",
+    "manifestVersion": "2.2"
+  },
+
+  "upgradePolicy": {
+    "rollingUpgrade": true,
+    "rollbackSupported": true,
+    "minimumPlatformVersion": "1.0.0"
+  },
+
+  "signature": {
+    "publisher": "TeamTender Root CA",
+    "signature": "SIG_DOC_PLUGIN_V1",
+    "checksum": "CHECKSUM_DOC_V1_HASH",
+    "buildHash": "BUILD_HASH_DOC_V1"
+  }
+}

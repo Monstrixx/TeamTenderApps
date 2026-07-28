@@ -1,0 +1,23 @@
+{
+  "title": "TeamTender Enterprise Architecture Search Index",
+  "version": "1.0.0",
+  "generatedAt": "2026-07-29T00:00:00Z",
+  "eras": [
+    { "id": "era-1", "name": "AI Core Kernel", "status": "Frozen", "locks": [1, 2, 3, 4, 5] },
+    { "id": "era-2", "name": "Runtime Layer", "status": "Frozen", "locks": [6, 7, 8, 9, 10, 11, 12] },
+    { "id": "era-3", "name": "Plugin Platform", "status": "Frozen", "locks": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24] },
+    { "id": "era-4", "name": "Reference Domain Plugins", "status": "Complete", "locks": [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52] }
+  ],
+  "specifications": [
+    { "id": "SPEC-001", "name": "AI Core Kernel Specification", "path": "docs/ai/kernel/v1.0/SPEC-001.md" },
+    { "id": "SPEC-002", "name": "Cognitive OS Specification", "path": "docs/ai/runtime/v1.0/SPEC-002.md" },
+    { "id": "SPEC-003", "name": "Agent Runtime Specification", "path": "docs/ai/runtime/v1.0/SPEC-003.md" },
+    { "id": "SPEC-DOMAIN-PLUGIN-v1.3", "name": "TeamTender Enterprise Domain Plugin Specification", "path": "docs/ai/architecture-kb/SPEC-DOMAIN-PLUGIN-v1.3.md" }
+  ],
+  "referencePlugins": [
+    { "id": "teamtender.plugin.company", "type": "Reference Implementation", "certification": "Golden Reference v1.0", "path": "src/ai/plugins/company" },
+    { "id": "teamtender.plugin.tender", "type": "Enterprise Domain Reference", "certification": "Golden Reference v1.0", "path": "src/ai/plugins/tender" }
+  ],
+  "lockCount": 52,
+  "standardsVersion": "v1.3"
+}

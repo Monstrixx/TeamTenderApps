@@ -191,3 +191,69 @@ export interface CompanyProfileProjection {
     projectionVersion: string;       // versioned snapshot
     projectedAt: string;
 }
+
+// ── Lock 42: Capability Observability ────────────────────────────────────
+// Every capability must produce its own telemetry.
+export interface CapabilityObservability {
+    capabilityId: string;
+    capabilityVersion: string;
+    executionTimeMs: number;
+    successRate: number;              // successful executions / total
+    approvalRate: number;             // approved decisions / total decisions
+    artifactCount: number;            // artifacts produced this session
+    evidenceCount: number;            // evidence items consumed
+    lastExecutedAt: string;
+}
+
+// ── Lock 43: Workflow Replayability ────────────────────────────────────
+// Minimum record needed to reconstruct any workflow execution for audit.
+export interface WorkflowReplayRecord {
+    workflowId: string;
+    workflowVersion: string;          // Lock 37
+    executionId: string;
+    triggeredAt: string;
+    steps: Array<{
+        capabilityId: string;
+        capabilityVersion: string;    // Lock 36
+        executionTimeMs: number;
+        artifactLineageId: string;    // Lock 38
+        evidencePackageId: string;    // Lock 30
+        decisionId: string;           // Lock 31
+    }>;
+    completedAt?: string;
+    status: "RUNNING" | "COMPLETED" | "FAILED" | "REPLAYING";
+}
+
+// ── Lock 44: Knowledge Freshness Contract ───────────────────────────────
+// Capabilities MUST check freshness before using knowledge packages.
+export interface KnowledgeFreshnessContract {
+    generatedAt: string;
+    sourceVersion: string;            // version of the knowledge source
+    snapshotId: string;
+    freshnessScore: number;           // 1.0 = FRESH, 0.0 = EXPIRED
+    expirationPolicy: {
+        maxAgeHours: number;
+        hardExpiry: boolean;          // true = reject stale; false = warn
+        gracePeriodMinutes: number;
+    };
+    isUsable(): boolean;              // runtime check for capability
+}
+
+// ── Lock 45: Domain SLA (declared via manifest, enforced here) ────────────
+export interface DomainSLA {
+    startupTimeMs: number;            // target: < 100ms
+    healthCheckTimeMs: number;        // target: < 10ms
+    maxMemoryMb: number;              // target: < 512MB
+    maxCpuTimeMs: number;             // target: < 10000ms
+    maxConcurrentAgents: number;      // target: 3
+    expectedResponseTimeMs: number;   // target: < 500ms per capability
+}
+
+export const TENDER_PLUGIN_SLA: DomainSLA = {
+    startupTimeMs: 100,
+    healthCheckTimeMs: 10,
+    maxMemoryMb: 512,
+    maxCpuTimeMs: 10000,
+    maxConcurrentAgents: 3,
+    expectedResponseTimeMs: 500
+};

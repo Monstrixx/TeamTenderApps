@@ -1,0 +1,76 @@
+{
+  "id": "teamtender.plugin.company",
+  "version": "1.0.0",
+  "manifestVersion": "2.1",
+  "type": "Domain",
+  "owner": "TeamTender Enterprise",
+  "publisher": "TeamTender Global",
+  "vendor": "TeamTender Inc",
+  "license": "MIT",
+  "pricing": "Included",
+  "support": "LTS",
+  "homepage": "https://teamtender.app/plugins/company",
+  "documentation": "https://docs.teamtender.app/plugins/company",
+  "description": "Golden Reference Domain Plugin for Company Intelligence, Profile, Experience, and Trust Platform.",
+  "distribution": "official",
+  "installation": "local",
+  "supportLevel": "LTS",
+  "upgradePolicy": {
+    "rollingUpgrade": true,
+    "rollbackSupported": true,
+    "minimumPlatformVersion": "1.0.0"
+  },
+  "dependencies": {
+    "required": [],
+    "optional": [],
+    "conflicts": [],
+    "replaces": []
+  },
+  "capabilities": [
+    {
+      "semanticId": "company.profile.analyze",
+      "name": "Company Profile Capability",
+      "enabled": true,
+      "sla": { "maxLatencyMs": 500, "availability": 0.999 }
+    },
+    {
+      "semanticId": "company.trust.verify",
+      "name": "Company Trust Capability",
+      "enabled": true,
+      "sla": { "maxLatencyMs": 1000, "availability": 0.999 }
+    },
+    {
+      "semanticId": "company.seo.index",
+      "name": "Company SEO Capability",
+      "enabled": false,
+      "sla": { "maxLatencyMs": 2000, "availability": 0.99 }
+    }
+  ],
+  "workflows": [
+    {
+      "id": "company.workflow.qualification",
+      "version": "1.0.0",
+      "name": "Company Qualification DAG Workflow"
+    }
+  ],
+  "quotas": {
+    "maxMemoryMb": 256,
+    "maxCpuTimeMs": 5000,
+    "maxAiTokens": 50000,
+    "maxConcurrentSessions": 10
+  },
+  "ui": {
+    "navigation": { "label": "Company Intelligence", "path": "/workspace/company" },
+    "widgets": ["PublicTrustWidget"],
+    "commandPalette": ["Analyze Company Profile", "Verify Trust Audit"],
+    "quickActions": ["Export Experience Portfolio"],
+    "searchProvider": "CompanySearchProvider",
+    "settingsProvider": "CompanySettingsProvider"
+  },
+  "signature": {
+    "publisher": "TeamTender Root CA",
+    "signature": "SIG_GOLDEN_REF_COMPANY_V1",
+    "checksum": "CHECKSUM_COMPANY_V1_HASH",
+    "buildHash": "BUILD_HASH_COMPANY_V1"
+  }
+}

@@ -6,12 +6,15 @@ Thank you for your interest in contributing to TeamTender!
 
 Please note that **Era-1 (AI Core Kernel)**, **Era-2 (Runtime Layer)**, and **Era-3 (Plugin Platform)** are **🔒 ARCHITECTURE FROZEN**.
 
-Direct modifications to:
-- `backend/src/ai/kernel/`
-- `backend/src/ai/api/`
-- `backend/src/ai/platform/`
+### Permanent Pull Request (PR) Governance Rule
+Direct architectural changes via Pull Requests are strictly prohibited. Pull Requests are exclusively mechanisms for implementing approved architectural decisions.
 
-are strictly prohibited unless approved via an official Architectural Decision Record (ADR) and RFC process.
+All architectural modifications to core layers MUST follow the mandatory protocol:
+```text
+RFC -> Architecture Review -> ADR -> Implementation -> Certification -> Release
+```
+
+PRs attempting to bypass this protocol or mutate core contracts will be automatically rejected.
 
 ## Domain Plugins (Era-4)
 

@@ -1,0 +1,138 @@
+{
+  "id": "teamtender.plugin.tender",
+  "version": "1.0.0",
+  "manifestVersion": "2.2",
+  "type": "Domain",
+  "domain": "Tender Intelligence",
+  "owner": "TeamTender Enterprise",
+  "publisher": "TeamTender Global",
+  "vendor": "TeamTender Inc",
+  "license": "MIT",
+  "pricing": "Included",
+  "support": "LTS",
+  "homepage": "https://teamtender.app/plugins/tender",
+  "documentation": "https://docs.teamtender.app/plugins/tender",
+  "description": "Enterprise Domain Plugin for Tender Intelligence — Discovery, Eligibility, Bid Preparation, Compliance, Evaluation, and Award Prediction.",
+  "distribution": "official",
+  "installation": "local",
+  "principleVersion": "Platform evolves slowly. Domains evolve rapidly.",
+
+  "capabilities": [
+    { "semanticId": "tender.document.parse",          "version": "1.0.0", "lifecycle": "ACTIVE", "name": "Tender Document Parser",      "enabled": true,  "sla": { "maxLatencyMs": 2000, "availability": 0.999 } },
+    { "semanticId": "tender.requirement.extract",     "version": "1.0.0", "lifecycle": "ACTIVE", "name": "Requirement Extractor",       "enabled": true,  "sla": { "maxLatencyMs": 1500, "availability": 0.999 } },
+    { "semanticId": "tender.eligibility.check",       "version": "1.0.0", "lifecycle": "ACTIVE", "name": "Eligibility Checker",         "enabled": true,  "sla": { "maxLatencyMs": 500,  "availability": 0.999 } },
+    { "semanticId": "tender.bid.analyze",             "version": "1.0.0", "lifecycle": "ACTIVE", "name": "Bid Analysis Engine",         "enabled": true,  "sla": { "maxLatencyMs": 3000, "availability": 0.999 } },
+    { "semanticId": "tender.bid.score",               "version": "1.0.0", "lifecycle": "ACTIVE", "name": "Bid Scoring System",          "enabled": true,  "sla": { "maxLatencyMs": 1000, "availability": 0.999 } },
+    { "semanticId": "tender.bid.optimize",            "version": "1.0.0", "lifecycle": "ACTIVE", "name": "Bid Optimization Engine",     "enabled": true,  "sla": { "maxLatencyMs": 5000, "availability": 0.999 } },
+    { "semanticId": "tender.compliance.review",       "version": "1.0.0", "lifecycle": "ACTIVE", "name": "Compliance Reviewer",         "enabled": true,  "sla": { "maxLatencyMs": 2000, "availability": 0.999 } },
+    { "semanticId": "tender.recommendation.generate", "version": "1.0.0", "lifecycle": "ACTIVE", "name": "Strategic Recommendation",    "enabled": true,  "sla": { "maxLatencyMs": 4000, "availability": 0.999 } },
+    { "semanticId": "tender.award.predict",           "version": "1.0.0", "lifecycle": "ACTIVE", "name": "Award Prediction",            "enabled": true,  "sla": { "maxLatencyMs": 2000, "availability": 0.999 } },
+    { "semanticId": "tender.workspace.manage",        "version": "1.0.0", "lifecycle": "ACTIVE", "name": "Workspace Manager",           "enabled": true,  "sla": { "maxLatencyMs": 200,  "availability": 0.9999 } }
+  ],
+
+  "knowledgeSources": [
+    { "id": "tender.knowledge.regulations",       "name": "Procurement Regulation DB",  "type": "Structured",       "freshness": "24h",      "scheduler": "RuntimeScheduler" },
+    { "id": "tender.knowledge.historical-bids",   "name": "Historical Bid Archive",     "type": "SemiStructured",   "freshness": "7d",       "scheduler": "RuntimeScheduler" },
+    { "id": "tender.knowledge.market-pricing",    "name": "Market Pricing Intelligence","type": "Structured",       "freshness": "1h",       "scheduler": "RuntimeScheduler" },
+    { "id": "tender.knowledge.technical-specs",   "name": "Technical Specification Lib","type": "Document",         "freshness": "on-demand","scheduler": "PluginEvent" },
+    { "id": "tender.knowledge.company-projection","name": "Company Profile Read Model", "type": "Projection",       "freshness": "event-driven","scheduler": "EventPlatform" }
+  ],
+
+  "workflows": [
+    { "id": "tender.workflow.discovery",       "version": "1.0.0", "name": "Tender Discovery",       "deterministic": true, "trigger": "manual" },
+    { "id": "tender.workflow.eligibility",     "version": "1.0.0", "name": "Eligibility Assessment", "deterministic": true, "trigger": "TenderIndexed" },
+    { "id": "tender.workflow.bid-preparation", "version": "1.0.0", "name": "Bid Preparation DAG",    "deterministic": true, "trigger": "EligibilityPassed" },
+    { "id": "tender.workflow.bid-optimization","version": "1.0.0", "name": "Bid Optimization",       "deterministic": true, "trigger": "BidFinalized" },
+    { "id": "tender.workflow.submission",      "version": "1.0.0", "name": "Bid Submission",          "deterministic": true, "trigger": "HumanApproval" },
+    { "id": "tender.workflow.evaluation",      "version": "1.0.0", "name": "Evaluation Pipeline",     "deterministic": true, "trigger": "BidSubmitted" },
+    { "id": "tender.workflow.award",           "version": "1.0.0", "name": "Award Processing",        "deterministic": true, "trigger": "EvaluationCompleted" }
+  ],
+
+  "agents": [
+    { "id": "agent.tender.analysis",         "name": "Tender Analysis Agent",       "model": "cognitive-v1", "tools": ["TenderDocumentParser", "KnowledgeRetriever"] },
+    { "id": "agent.tender.bid-optimization", "name": "Bid Optimization Agent",      "model": "cognitive-v1", "tools": ["BidScoringTool", "MarketPricingTool"] },
+    { "id": "agent.tender.compliance",       "name": "Compliance Review Agent",      "model": "cognitive-v1", "tools": ["RegulationChecker", "ComplianceTool"] }
+  ],
+
+  "policies": [
+    { "id": "tender.policy.eligibility",  "name": "Tender Eligibility Policy",  "engine": "PolicyEngine",    "priority": 1 },
+    { "id": "tender.policy.compliance",   "name": "Tender Compliance Policy",   "engine": "ConstraintEngine", "priority": 2 }
+  ],
+
+  "events": {
+    "published": [
+      "TenderPublished", "TenderIndexed", "RequirementsExtracted",
+      "EligibilityAssessmentStarted", "EligibilityAssessed",
+      "BidDraftCreated", "BidAnalyzed", "BidScored", "ComplianceReviewed",
+      "BidFinalized", "BidOptimized", "RecommendationGenerated",
+      "BidSubmitted", "SubmissionConfirmed", "EvaluationCompleted",
+      "AwardDeclared", "KnowledgeRefreshRequested"
+    ],
+    "consumed": [
+      "CompanyProfileUpdated"
+    ]
+  },
+
+  "artifacts": [
+    { "type": "EligibilityReportArtifact",  "version": "1.0.0", "lineageTracked": true },
+    { "type": "BidAnalysisArtifact",        "version": "1.0.0", "lineageTracked": true },
+    { "type": "BidScorecardArtifact",       "version": "1.0.0", "lineageTracked": true },
+    { "type": "BidStrategyArtifact",        "version": "1.0.0", "lineageTracked": true },
+    { "type": "ComplianceReportArtifact",   "version": "1.0.0", "lineageTracked": true },
+    { "type": "RecommendationArtifact",     "version": "1.0.0", "lineageTracked": true },
+    { "type": "PredictionArtifact",         "version": "1.0.0", "lineageTracked": true }
+  ],
+
+  "ui": {
+    "navigation": { "label": "Tender Intelligence", "path": "/workspace/tender", "icon": "tender-icon" },
+    "pages": ["TenderDashboard", "TenderDetail", "BidWorkspace", "EligibilityReport", "ComplianceReport", "BidStrategy", "AwardPrediction", "TenderHistory"],
+    "widgets": ["ActiveTendersWidget", "BidStatusWidget", "EligibilityScoreWidget", "AwardPredictionWidget", "ComplianceStatusWidget", "TenderTimelineWidget"],
+    "commandPalette": ["Search Tenders", "Assess Eligibility", "Create Bid Draft", "Optimize Bid Strategy", "Review Compliance", "Generate Recommendation", "Predict Award Outcome"],
+    "searchProvider": "TenderSearchProvider",
+    "settingsProvider": "TenderSettingsProvider"
+  },
+
+  "telemetry": {
+    "platformMetrics": ["latency", "memory", "routing"],
+    "domainKPIs": [
+      "eligibilityAccuracy", "bidScoreAccuracy", "recommendationAcceptanceRate",
+      "awardPredictionAccuracy", "workflowCompletionRate",
+      "artifactGenerationTimeMs", "knowledgeFreshness", "humanApprovalRate"
+    ]
+  },
+
+  "quotas": {
+    "maxMemoryMb": 512,
+    "maxCpuTimeMs": 10000,
+    "maxAiTokens": 100000,
+    "maxConcurrentSessions": 20
+  },
+
+  "dependencies": {
+    "required": [],
+    "optional": ["teamtender.plugin.company"],
+    "conflicts": [],
+    "replaces": []
+  },
+
+  "compatibility": {
+    "platformVersion": ">=1.0.0",
+    "runtimeVersion": ">=1.0.0",
+    "kernelVersion": ">=1.0.0",
+    "sdkVersion": ">=1.0.0",
+    "manifestVersion": "2.2"
+  },
+
+  "upgradePolicy": {
+    "rollingUpgrade": true,
+    "rollbackSupported": true,
+    "minimumPlatformVersion": "1.0.0"
+  },
+
+  "signature": {
+    "publisher": "TeamTender Root CA",
+    "signature": "SIG_TENDER_PLUGIN_V1",
+    "checksum": "CHECKSUM_TENDER_V1_HASH",
+    "buildHash": "BUILD_HASH_TENDER_V1"
+  }
+}

@@ -8,8 +8,14 @@ import {
   workspaceIdParamSchema, 
   workspaceQuerySchema 
 } from '../schemas/workspace.schema';
+import workspaceMembersRoutes from './workspace-members.routes';
+import { workspaceSpecificRouter as workspaceInvitationsRoutes } from './workspace-invitations.routes';
+import { workspaceMiddleware } from '../middleware/workspace.middleware';
 
 const router = Router();
+
+router.use('/:workspaceId/members', authenticate, workspaceMiddleware, workspaceMembersRoutes);
+router.use('/:workspaceId/invitations', authenticate, workspaceMiddleware, workspaceInvitationsRoutes);
 
 router.get(
   '/',

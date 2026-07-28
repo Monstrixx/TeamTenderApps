@@ -1,7 +1,13 @@
 import prisma from '../database/prisma';
 import { Tender, Prisma } from '@prisma/client';
 
-export class TenderRepository {
+import { TenantRepository } from '../common/repositories/TenantRepository';
+import { QueryOptions } from '../common/query/QueryOptions';
+
+export class TenderRepository extends TenantRepository<Tender, QueryOptions> {
+  constructor() {
+    super(prisma.tender);
+  }
   async create(data: Prisma.TenderUncheckedCreateInput): Promise<Tender> {
     return prisma.tender.create({
       data,
@@ -14,7 +20,7 @@ export class TenderRepository {
 
   async findById(id: string): Promise<Tender | null> {
     return prisma.tender.findUnique({
-      where: { id },
+      where: this.getTenantWhere({ id }),
       include: {
         personnelRequirements: {
           include: {
@@ -37,25 +43,25 @@ export class TenderRepository {
     });
   }
 
-  async findByCode(code: string, workspaceId: string): Promise<Tender | null> {
+  async findByCode(code: string): Promise<Tender | null> {
     return prisma.tender.findFirst({
-      where: { code, workspaceId },
+      where: this.getTenantWhere({ code }),
     });
   }
 
-  async findAll(workspaceId: string): Promise<Tender[]> {
+  async findAllWorkspaceTenders(): Promise<Tender[]> {
     return prisma.tender.findMany({
-      where: { workspaceId, deletedAt: null },
+      where: this.getTenantWhere({ deletedAt: null }),
       orderBy: { createdAt: 'desc' }
     });
   }
 
   async update(id: string, data: Prisma.TenderUpdateInput, expectedVersion?: number): Promise<Tender> {
-    const whereClause: Prisma.TenderWhereUniqueInput = { id };
+    const whereClause = this.getTenantWhere({ id });
     
     // Optimistic locking support
     if (expectedVersion !== undefined) {
-      whereClause.version = expectedVersion;
+      (whereClause as any).version = expectedVersion;
       data.version = { increment: 1 };
     }
 
@@ -76,7 +82,7 @@ export class TenderRepository {
 
   async softDelete(id: string): Promise<Tender> {
     return prisma.tender.update({
-      where: { id },
+      where: this.getTenantWhere({ id }),
       data: {
         deletedAt: new Date(),
         status: 'CANCELLED'

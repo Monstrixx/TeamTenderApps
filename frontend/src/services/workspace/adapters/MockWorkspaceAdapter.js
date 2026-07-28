@@ -218,5 +218,52 @@ export const MockWorkspaceAdapter = {
             updated_at: new Date().toISOString()
         }));
         return createEnvelope(dtos);
+    },
+    
+    // Member Management
+    getMembers: async (workspaceId, params = {}) => {
+        await delay(500);
+        return createEnvelope([], { page: 1, page_size: 10, total_items: 0, total_pages: 0 });
+    },
+    changeMemberRole: async (workspaceId, memberId, roleId) => {
+        await delay(500);
+        return createEnvelope(null);
+    },
+    updateMemberStatus: async (workspaceId, memberId, status) => {
+        await delay(500);
+        return createEnvelope(null);
+    },
+    removeMember: async (workspaceId, memberId) => {
+        await delay(500);
+        return createEnvelope(null);
+    },
+    
+    // Invitation Management
+    getInvitations: async (workspaceId, params = {}) => {
+        await delay(500);
+        return createEnvelope([], { page: 1, page_size: 10, total_items: 0, total_pages: 0 });
+    },
+    inviteMember: async (workspaceId, data) => {
+        await delay(500);
+        return createEnvelope(null);
+    },
+    revokeInvitation: async (workspaceId, invitationId) => {
+        await delay(500);
+        return createEnvelope(null);
+    },
+    acceptInvitation: async (token) => {
+        await delay(500);
+        return createEnvelope(null);
+    },
+    
+    // Roles
+    getRoles: async (workspaceId) => {
+        await delay(500);
+        return createEnvelope([
+            { id: '1', name: 'OWNER' },
+            { id: '2', name: 'ADMIN' },
+            { id: '3', name: 'MEMBER' },
+            { id: '4', name: 'VIEWER' }
+        ]);
     }
 };

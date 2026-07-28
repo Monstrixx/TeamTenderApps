@@ -23,9 +23,9 @@ export const ROUTE_MAP = {
   'tender-baru': '/tender-baru',
   'tender-aktif': '/tender-aktif',
   'tender-arsip': '/tender-arsip',
-  'workspace': '/workspace',
   'verify': '/validation',
-  'mitra-kso': '/mitra-kso'
+  'mitra-kso': '/mitra-kso',
+  'workspace-selector': '/workspace-selector'
 };
 
 export const PATH_TO_ID = {
@@ -39,13 +39,14 @@ export const PATH_TO_ID = {
   '/tender-baru': 'tender-baru',
   '/tender-aktif': 'tender-aktif',
   '/tender-arsip': 'tender-arsip',
-  '/workspace': 'workspace',
   '/validation': 'verify',
   '/verify': 'verify',
-  '/mitra-kso': 'mitra-kso'
+  '/mitra-kso': 'mitra-kso',
+  '/workspace-selector': 'workspace-selector'
 };
 
 const LoginPage = lazy(() => import('../../pages/LoginPage'));
+const WorkspaceSelectorPage = lazy(() => import('../../pages/WorkspaceSelectorPage'));
 
 export const routes = [
   { path: '/', id: 'landing', element: LandingPage, type: 'public', restricted: false },
@@ -57,9 +58,10 @@ export const routes = [
   { path: '/tender-baru', id: 'tender-baru', element: TenderBaru, type: 'protected' },
   { path: '/tender-aktif', id: 'tender-aktif', element: TenderAktif, type: 'protected' },
   { path: '/tender-arsip', id: 'tender-arsip', element: TenderArsip, type: 'protected' },
-  { path: '/workspace', id: 'workspace', element: Workspace, type: 'permission', permission: 'VIEW_WORKSPACE' },
   { path: '/surat-menyurat', id: 'surat', element: SuratMenyurat, type: 'protected' },
   { path: '/validation', id: 'verify', element: ValidationPage, type: 'public', restricted: false },
   { path: '/verify', id: 'verify', element: ValidationPage, type: 'public', restricted: false },
-  { path: '/mitra-kso', id: 'mitra-kso', element: MitraKso, type: 'protected' }
+  { path: '/mitra-kso', id: 'mitra-kso', element: MitraKso, type: 'protected' },
+  { path: '/workspace-selector', id: 'workspace-selector', element: WorkspaceSelectorPage, type: 'protected' }
 ];
+

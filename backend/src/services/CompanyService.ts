@@ -129,13 +129,16 @@ export class CompanyService {
       throw new ApiError(404, 'Company not found in this workspace');
     }
 
-    const { legal, addresses, workspace, ...company } = companyData;
+    const { legal, addresses, contacts, bankAccounts, timeline, workspace, ...company } = companyData;
     const statistics = await CompanyStatisticsService.getStatistics(company, legal, addresses || []);
 
     return {
       company,
       legal: legal || null,
       addresses: addresses || [],
+      contacts: contacts || [],
+      bankAccounts: bankAccounts || [],
+      timeline: timeline || [],
       workspace,
       statistics
     };

@@ -17,4 +17,7 @@ export const workspaceKeys = {
     alat: (id) => ['workspace', id, 'alat'],
     ahsp: (id) => ['workspace', id, 'ahsp'],
     boq: (id) => ['workspace', id, 'boq'],
+    members: (id) => ['workspace', id, 'members'],
+    invitations: (id) => ['workspace', id, 'invitations'],
+    roles: () => ['workspace', 'roles'],
 };

@@ -45,7 +45,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
     const ctx = getRequestContext();
     if (ctx) {
       ctx.userId = payload.sub;
-      ctx.workspaceId = payload.workspaceId;
+      ctx.workspaceId = payload.workspaceId || '';
     }
 
     return next();
@@ -75,11 +75,11 @@ export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFu
         permissions: payload.permissions,
       };
 
-      const ctx = getRequestContext();
-      if (ctx) {
-        ctx.userId = payload.sub;
-        ctx.workspaceId = payload.workspaceId;
-      }
+    const ctx = getRequestContext();
+    if (ctx) {
+      ctx.userId = payload.sub;
+      ctx.workspaceId = payload.workspaceId || '';
+    }
     }
     
     return next();

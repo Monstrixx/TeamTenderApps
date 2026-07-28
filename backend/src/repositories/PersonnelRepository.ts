@@ -1,8 +1,8 @@
-import { BaseRepository } from '../common/repositories/BaseRepository';
+import { TenantRepository } from '../common/repositories/TenantRepository';
 import prisma from '../database/prisma';
 import { Personnel, Prisma } from '@prisma/client';
 
-class PersonnelRepository extends BaseRepository<Personnel> {
+class PersonnelRepository extends TenantRepository<Personnel> {
   constructor() {
     super(prisma.personnel);
   }
@@ -13,31 +13,31 @@ class PersonnelRepository extends BaseRepository<Personnel> {
 
   async countByWorkspace(workspaceId: string): Promise<number> {
     return prisma.personnel.count({
-      where: { workspaceId }
+      where: this.getTenantWhere({})
     });
   }
 
   async existsBySlug(slug: string): Promise<boolean> {
     const count = await prisma.personnel.count({
-      where: { slug }
+      where: this.getTenantWhere({ slug })
     });
     return count > 0;
   }
 
   async existsByNik(workspaceId: string, nik: string): Promise<boolean> {
     const count = await prisma.personnel.count({
-      where: { workspaceId, nik }
+      where: this.getTenantWhere({ nik })
     });
     return count > 0;
   }
 
   async updateWithVersion(id: string, expectedVersion: number, data: any, updatedBy: string): Promise<Personnel> {
     const updateResult = await prisma.personnel.updateMany({
-      where: {
+      where: this.getTenantWhere({
         id,
         version: expectedVersion,
         deletedAt: null
-      },
+      }),
       data: {
         ...data,
         version: { increment: 1 },
@@ -54,7 +54,7 @@ class PersonnelRepository extends BaseRepository<Personnel> {
 
   async findProfile(id: string): Promise<any | null> {
     return prisma.personnel.findFirst({
-      where: { id, deletedAt: null },
+      where: this.getTenantWhere({ id, deletedAt: null }),
       include: {
         educations: true,
         experiences: true,

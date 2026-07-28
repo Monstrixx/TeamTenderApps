@@ -1,11 +1,12 @@
 import { z } from 'zod';
-import { CompanyBusinessType, CompanyStatus, AddressType } from '@prisma/client';
+import { CompanyBusinessType, CompanyStatus, AddressType, CompanyVisibility, CompanyVerificationStatus } from '@prisma/client';
 
 export const CompanyQuerySchema = z.object({
   page: z.string().regex(/^\d+$/).transform(Number).optional(),
   limit: z.string().regex(/^\d+$/).transform(Number).optional(),
   keyword: z.string().optional(),
   status: z.nativeEnum(CompanyStatus).optional(),
+  visibility: z.nativeEnum(CompanyVisibility).optional(),
   sort: z.string().optional(),
   order: z.enum(['asc', 'desc']).optional(),
   includeDeleted: z.enum(['true', 'false']).transform((v) => v === 'true').optional(),
@@ -49,11 +50,34 @@ export const CreateCompanyAddressSchema = z.object({
   isPrimary: z.boolean().default(false),
 });
 
+export const CreateCompanyContactSchema = z.object({
+  fullName: z.string().min(2),
+  position: z.string().optional().nullable(),
+  email: z.string().email().optional().nullable(),
+  phone: z.string().optional().nullable(),
+  mobilePhone: z.string().optional().nullable(),
+  department: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+  isPrimary: z.boolean().default(false),
+});
+
+export const CreateCompanyBankAccountSchema = z.object({
+  bankName: z.string().min(2),
+  bankBranch: z.string().optional().nullable(),
+  accountNumber: z.string().min(4),
+  accountHolder: z.string().min(2),
+  swiftCode: z.string().optional().nullable(),
+  currency: z.string().default('IDR'),
+  isPrimary: z.boolean().default(false),
+});
+
 export const CreateCompanySchema = z.object({
   name: z.string().min(2),
   legalName: z.string().optional().nullable(),
   businessType: z.nativeEnum(CompanyBusinessType),
   status: z.nativeEnum(CompanyStatus).default(CompanyStatus.ACTIVE),
+  visibility: z.nativeEnum(CompanyVisibility).default(CompanyVisibility.PRIVATE),
+  verificationStatus: z.nativeEnum(CompanyVerificationStatus).default(CompanyVerificationStatus.PENDING),
   email: z.string().email().optional().nullable(),
   phone: z.string().optional().nullable(),
   website: z.string().url().optional().nullable(),

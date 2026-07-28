@@ -1,31 +1,31 @@
-import { BaseRepository } from '../common/repositories/BaseRepository';
+import { TenantRepository } from '../common/repositories/TenantRepository';
 import { Supplier, Prisma } from '@prisma/client';
 import prisma from '../database/prisma';
 
-export class SupplierRepository extends BaseRepository<Supplier> {
+export class SupplierRepository extends TenantRepository<Supplier> {
   constructor() {
     super(prisma.supplier);
   }
 
   async findByCode(code: string): Promise<Supplier | null> {
-    return this.model.findFirst({ where: { code, deletedAt: null } });
+    return this.model.findFirst({ where: this.getTenantWhere({ code, deletedAt: null }) });
   }
 
   async findBySlug(slug: string): Promise<Supplier | null> {
-    return this.model.findFirst({ where: { slug, deletedAt: null } });
+    return this.model.findFirst({ where: this.getTenantWhere({ slug, deletedAt: null }) });
   }
 
   async findByCompany(companyId: string): Promise<Supplier[]> {
-    return this.model.findMany({ where: { companyId, deletedAt: null } });
+    return this.model.findMany({ where: this.getTenantWhere({ companyId, deletedAt: null }) });
   }
 
   async findByWorkspace(workspaceId: string): Promise<Supplier[]> {
-    return this.model.findMany({ where: { workspaceId, deletedAt: null } });
+    return this.model.findMany({ where: this.getTenantWhere({ deletedAt: null }) });
   }
 
   async findProfile(id: string): Promise<any | null> {
     return prisma.supplier.findFirst({
-      where: { id, deletedAt: null },
+      where: this.getTenantWhere({ id, deletedAt: null }),
       include: {
         contacts: true,
         bankAccounts: true,
@@ -62,39 +62,38 @@ export class SupplierRepository extends BaseRepository<Supplier> {
 
   async existsByName(workspaceId: string, companyId: string, name: string): Promise<boolean> {
     const count = await prisma.supplier.count({
-      where: {
-        workspaceId,
+      where: this.getTenantWhere({
         companyId,
         name: { equals: name, mode: 'insensitive' },
         deletedAt: null,
-      },
+      }),
     });
     return count > 0;
   }
 
   async existsBySlug(slug: string): Promise<boolean> {
     const count = await prisma.supplier.count({
-      where: { slug, deletedAt: null },
+      where: this.getTenantWhere({ slug, deletedAt: null }),
     });
     return count > 0;
   }
 
   async existsByCode(code: string): Promise<boolean> {
     const count = await prisma.supplier.count({
-      where: { code, deletedAt: null },
+      where: this.getTenantWhere({ code, deletedAt: null }),
     });
     return count > 0;
   }
 
   async countByWorkspace(workspaceId: string): Promise<number> {
     return prisma.supplier.count({
-      where: { workspaceId, deletedAt: null },
+      where: this.getTenantWhere({ deletedAt: null }),
     });
   }
 
   async countByCompany(companyId: string): Promise<number> {
     return prisma.supplier.count({
-      where: { companyId, deletedAt: null },
+      where: this.getTenantWhere({ companyId, deletedAt: null }),
     });
   }
 
@@ -106,7 +105,7 @@ export class SupplierRepository extends BaseRepository<Supplier> {
     try {
       const [updated] = await prisma.$transaction([
         prisma.supplier.update({
-          where: { id, version },
+          where: this.getTenantWhere({ id, version }),
           data: {
             ...data,
             version: { increment: 1 },

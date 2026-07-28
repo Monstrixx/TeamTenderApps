@@ -1,7 +1,13 @@
 import prisma from '../database/prisma';
 import { Equipment, Prisma } from '@prisma/client';
+import { QueryOptions } from '../common/query/QueryOptions';
+import { TenantRepository } from '../common/repositories/TenantRepository';
 
-export class EquipmentRepository {
+export class EquipmentRepositoryImpl extends TenantRepository<Equipment, QueryOptions> {
+  constructor() {
+    super(prisma.equipment);
+  }
+  
   async create(data: Prisma.EquipmentUncheckedCreateInput): Promise<Equipment> {
     return prisma.equipment.create({
       data,
@@ -14,7 +20,7 @@ export class EquipmentRepository {
 
   async findById(id: string): Promise<Equipment | null> {
     return prisma.equipment.findUnique({
-      where: { id },
+      where: this.getTenantWhere({ id }),
       include: {
         category: true,
         specifications: true,
@@ -31,18 +37,18 @@ export class EquipmentRepository {
     });
   }
 
-  async findByCode(code: string, workspaceId: string): Promise<Equipment | null> {
+  async findByCode(code: string): Promise<Equipment | null> {
     return prisma.equipment.findFirst({
-      where: { code, workspaceId },
+      where: this.getTenantWhere({ code }),
       include: {
         category: true,
       },
     });
   }
 
-  async findAll(workspaceId: string): Promise<Equipment[]> {
+  async findAllWorkspaceEquipments(): Promise<Equipment[]> {
     return prisma.equipment.findMany({
-      where: { workspaceId, deletedAt: null },
+      where: this.getTenantWhere({ deletedAt: null }),
       include: {
         category: true,
       },
@@ -50,11 +56,11 @@ export class EquipmentRepository {
   }
 
   async update(id: string, data: Prisma.EquipmentUpdateInput, expectedVersion?: number): Promise<Equipment> {
-    const whereClause: Prisma.EquipmentWhereUniqueInput = { id };
+    const whereClause = this.getTenantWhere({ id });
     
     // Optimistic locking support
     if (expectedVersion !== undefined) {
-      whereClause.version = expectedVersion;
+      (whereClause as any).version = expectedVersion;
       data.version = { increment: 1 };
     }
 
@@ -85,4 +91,4 @@ export class EquipmentRepository {
   }
 }
 
-export default new EquipmentRepository();
+export default new EquipmentRepositoryImpl();

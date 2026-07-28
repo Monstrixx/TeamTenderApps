@@ -3,16 +3,29 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import Workspace from './Workspace';
 import * as requestLetterGenerator from '../shared/helpers/requestLetterGenerator';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 describe('Workspace - Request Letter Integration', () => {
     it('calls generateRequestLetterText and displays preview when navigating to Surat Dukungan', async () => {
         // Spy on the helper
         const generateSpy = vi.spyOn(requestLetterGenerator, 'generateRequestLetterText');
 
-        render(<Workspace />);
+        const queryClient = new QueryClient({
+            defaultOptions: {
+                queries: {
+                    retry: false,
+                },
+            },
+        });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <Workspace />
+            </QueryClientProvider>
+        );
 
         // 1. Open Workspace -> Go to "Persyaratan Teknis" Section
-        const teknisButton = screen.getByText('Dokumen Teknis');
+        const teknisButton = await screen.findByText('Dokumen Teknis');
         fireEvent.click(teknisButton);
 
         // 2. Select "Surat Dukungan" sub tab

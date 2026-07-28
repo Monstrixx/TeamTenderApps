@@ -109,5 +109,53 @@ export const workspaceService = {
         const adapter = getWorkspaceAdapter();
         const response = await adapter.getDocuments(workspaceId);
         return mapDocValidation(response.data);
+    },
+    
+    getMembers: async (workspaceId, params) => {
+        const adapter = getWorkspaceAdapter();
+        const response = await adapter.getMembers(workspaceId, params);
+        return response;
+    },
+    
+    changeMemberRole: async (workspaceId, memberId, roleId) => {
+        const adapter = getWorkspaceAdapter();
+        return await adapter.changeMemberRole(workspaceId, memberId, roleId);
+    },
+    
+    updateMemberStatus: async (workspaceId, memberId, status) => {
+        const adapter = getWorkspaceAdapter();
+        return await adapter.updateMemberStatus(workspaceId, memberId, status);
+    },
+    
+    removeMember: async (workspaceId, memberId) => {
+        const adapter = getWorkspaceAdapter();
+        return await adapter.removeMember(workspaceId, memberId);
+    },
+    
+    getInvitations: async (workspaceId, params) => {
+        const adapter = getWorkspaceAdapter();
+        const response = await adapter.getInvitations(workspaceId, params);
+        return response;
+    },
+    
+    inviteMember: async (workspaceId, data) => {
+        const adapter = getWorkspaceAdapter();
+        return await adapter.inviteMember(workspaceId, data);
+    },
+    
+    revokeInvitation: async (workspaceId, invitationId) => {
+        const adapter = getWorkspaceAdapter();
+        return await adapter.revokeInvitation(workspaceId, invitationId);
+    },
+    
+    acceptInvitation: async (token) => {
+        const adapter = getWorkspaceAdapter();
+        return await adapter.acceptInvitation(token);
+    },
+    
+    getRoles: async (workspaceId) => {
+        const adapter = getWorkspaceAdapter();
+        const response = await adapter.getRoles(workspaceId);
+        return response.data;
     }
 };

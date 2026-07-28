@@ -7,18 +7,20 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  username      String?        @unique
-  passwordHash  String
-  name          String
-  tokenVersion  Int            @default(0)
-  lastLogin     DateTime?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  roles         UserRole[]
-  workspaces    Workspace[]
-  refreshTokens RefreshToken[]
+  id               String                @id @default(uuid())
+  email            String                @unique
+  username         String?               @unique
+  passwordHash     String
+  name             String
+  tokenVersion     Int                   @default(0)
+  lastLogin        DateTime?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  roles            UserRole[]
+  workspaces       Workspace[]
+  workspaceMembers WorkspaceMember[]
+  refreshTokens    RefreshToken[]
+  sentInvitations  WorkspaceInvitation[]
 }
 
 model Role {
@@ -94,9 +96,11 @@ model Workspace {
 
   owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
-  companies  Company[]
-  suppliers  Supplier[]
-  personnels Personnel[]
+  companies   Company[]
+  suppliers   Supplier[]
+  personnels  Personnel[]
+  members     WorkspaceMember[]
+  invitations WorkspaceInvitation[]
 
   @@index([status])
   @@index([ownerId])
@@ -114,6 +118,111 @@ model RefreshToken {
   revokedAt DateTime?
   createdAt DateTime  @default(now())
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ==========================================
+// WORKSPACE COLLABORATION DOMAIN (Wave 6)
+// ==========================================
+
+enum WorkspacePermission {
+  WORKSPACE_READ
+  WORKSPACE_UPDATE
+  WORKSPACE_DELETE
+  WORKSPACE_RESTORE
+  MEMBER_READ
+  MEMBER_CREATE
+  MEMBER_UPDATE
+  MEMBER_DELETE
+  INVITATION_READ
+  INVITATION_CREATE
+  INVITATION_DELETE
+  ROLE_READ
+}
+
+enum WorkspaceRoleType {
+  OWNER
+  ADMINISTRATOR
+  MANAGER
+  EDITOR
+  VIEWER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  REVOKED
+}
+
+enum MemberStatus {
+  ACTIVE
+  INACTIVE
+  DEACTIVATED
+}
+
+model WorkspaceRole {
+  id          String                @id @default(cuid())
+  name        String                @unique
+  type        WorkspaceRoleType
+  description String?
+  permissions WorkspacePermission[] // Enum array
+
+  members     WorkspaceMember[]
+  invitations WorkspaceInvitation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WorkspaceMember {
+  id          String       @id @default(cuid())
+  workspaceId String
+  userId      String
+  roleId      String
+  status      MemberStatus @default(ACTIVE)
+
+  workspace Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      WorkspaceRole @relation(fields: [roleId], references: [id])
+
+  joinedAt     DateTime?
+  lastActiveAt DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // For soft delete
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+}
+
+model WorkspaceInvitation {
+  id          String           @id @default(cuid())
+  workspaceId String
+  email       String
+  displayName String?
+  roleId      String
+  token       String           @unique
+  status      InvitationStatus @default(PENDING)
+
+  inviterId String
+
+  workspace Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  role      WorkspaceRole @relation(fields: [roleId], references: [id])
+  inviter   User          @relation(fields: [inviterId], references: [id])
+
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  rejectedAt DateTime?
+  revokedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([workspaceId])
+  @@index([email])
 }
 
 enum AuditLevel {
@@ -156,6 +265,21 @@ enum CompanyStatus {
   ARCHIVED
 }
 
+enum CompanyVisibility {
+  PRIVATE
+  WORKSPACE
+  PUBLIC
+  UNLISTED
+  ARCHIVED
+}
+
+enum CompanyVerificationStatus {
+  VERIFIED
+  PENDING
+  REJECTED
+  EXPIRED
+}
+
 enum CompanyBusinessType {
   PT
   CV
@@ -180,13 +304,16 @@ model Company {
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
 
-  code         String              @unique
-  slug         String              @unique
-  name         String
-  legalName    String?
-  version      Int                 @default(1)
-  businessType CompanyBusinessType
-  status       CompanyStatus
+  code               String                    @unique
+  slug               String                    @unique
+  name               String
+  legalName          String?
+  version            Int                       @default(1)
+  businessType       CompanyBusinessType
+  status             CompanyStatus
+  visibility         CompanyVisibility         @default(PRIVATE)
+  verificationStatus CompanyVerificationStatus @default(PENDING)
+  verifiedAt         DateTime?
 
   email           String?
   phone           String?
@@ -204,8 +331,19 @@ model Company {
   updatedBy String?
   deletedBy String?
 
-  addresses CompanyAddress[]
-  legal     CompanyLegal?
+  addresses    CompanyAddress[]
+  legal        CompanyLegal?
+  contacts     CompanyContact[]
+  bankAccounts CompanyBankAccount[]
+  timeline     CompanyTimeline[]
+  assets       CompanyAsset[]
+  profile      CompanyProfile?
+  brandKit     CompanyBrandKit?
+  portfolios   CompanyPortfolio[]
+  products     CompanyProduct[]
+  services     CompanyService[]
+  activities   CompanyActivity[]
+  downloads    CompanyDownload[]
 
   // Future Relations (Wave 6+)
   suppliers  Supplier[]
@@ -288,6 +426,261 @@ model CompanyDocument {
 
   @@index([companyId])
   @@index([documentId])
+}
+
+model CompanyContact {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  fullName    String
+  position    String?
+  email       String?
+  phone       String?
+  mobilePhone String?
+  department  String?
+  notes       String?
+  isPrimary   Boolean @default(false)
+
+  @@index([companyId])
+}
+
+model CompanyBankAccount {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  bankName      String
+  bankBranch    String?
+  accountNumber String
+  accountHolder String
+  swiftCode     String?
+  currency      String  @default("IDR")
+  isPrimary     Boolean @default(false)
+
+  @@index([companyId])
+}
+
+model CompanyTimeline {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  year        Int
+  title       String
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([year])
+}
+
+enum CompanyAssetType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  ARCHIVE
+  OTHER
+}
+
+model CompanyAsset {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  type     CompanyAssetType
+  url      String
+  mimeType String?
+  size     Int? // bytes
+  filename String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+model CompanyBrandKit {
+  id        String  @id @default(cuid())
+  companyId String  @unique
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  primaryColor     String?
+  secondaryColor   String?
+  accentColor      String?
+  fontFamily       String?
+  typography       Json?
+  logoAssetId      String? // Reference to CompanyAsset, but kept as string ID
+  lightLogoAssetId String?
+  darkLogoAssetId  String?
+  faviconAssetId   String? // Reference to CompanyAsset
+  brandSlogan      String?
+  ctaLabel         String?
+  ctaUrl           String?
+  themeConfig      Json? // Extension point for Theme System
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CompanyProfile {
+  id        String  @id @default(cuid())
+  companyId String  @unique
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  heroAssetId String? // Reference to CompanyAsset
+  about       String? @db.Text
+  vision      String? @db.Text
+  mission     String? @db.Text
+
+  // SEO Meta
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+
+  // JSON array for gallery (array of asset IDs)
+  galleryAssetIds String? // JSON string
+  layoutConfig    Json? // Extension point for Block Layout
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CompanyPortfolio {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  title           String
+  category        String?
+  client          String?
+  location        String?
+  description     String?   @db.Text
+  completionDate  DateTime?
+  contractValue   Decimal?
+  coverAssetId    String?
+  galleryAssetIds String? // JSON string array
+  relatedServices String? // JSON string array
+  relatedProducts String? // JSON string array
+  semanticTags    Json? // Extension point for Knowledge Graph
+  featured        Boolean   @default(false)
+  displayOrder    Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+model CompanyProduct {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  name             String
+  slug             String  @unique
+  category         String?
+  shortDescription String?
+  fullDescription  String? @db.Text
+  specifications   Json?
+  coverAssetId     String?
+  galleryAssetIds  String? // JSON string array
+  downloadAssetIds String? // JSON string array
+  semanticTags     Json? // Extension point for Knowledge Graph
+  featured         Boolean @default(false)
+  active           Boolean @default(true)
+  displayOrder     Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+model CompanyService {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  name             String
+  category         String?
+  description      String? @db.Text
+  icon             String?
+  heroAssetId      String?
+  galleryAssetIds  String? // JSON string array
+  relatedPortfolio String? // JSON string array
+  semanticTags     Json? // Extension point for Knowledge Graph
+  featured         Boolean @default(false)
+  active           Boolean @default(true)
+  displayOrder     Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+enum CompanyActivityCategory {
+  ACHIEVEMENT
+  CERTIFICATION
+  PROJECT
+  AWARD
+  MILESTONE
+  NEWS
+  EVENT
+}
+
+model CompanyActivity {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  title        String
+  summary      String?                 @db.Text
+  date         DateTime
+  category     CompanyActivityCategory
+  coverAssetId String?
+  visibility   CompanyVisibility       @default(PUBLIC)
+  featured     Boolean                 @default(false)
+
+  // Extension point for Generic Activity Stream
+  relatedEntityType String?
+  relatedEntityId   String?
+  metadata          Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+enum CompanyDownloadCategory {
+  PROFILE
+  BROCHURE
+  CATALOGUE
+  CERTIFICATE
+  PRESENTATION
+  OTHER
+}
+
+model CompanyDownload {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  title      String
+  category   CompanyDownloadCategory
+  assetId    String
+  version    String?
+  language   String?                 @default("en")
+  visibility CompanyVisibility       @default(PUBLIC)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
 }
 
 // ==========================================
@@ -1018,6 +1411,9 @@ enum EntityType {
   COMPANY
   PERSONNEL
   TENDER
+  EQUIPMENT
+  SUPPLIER
+  DOCUMENT
 }
 
 model DocumentPermission {
@@ -1575,4 +1971,582 @@ model TenderEvaluation {
 
   @@index([tenderId])
   @@index([supplierId])
+}
+
+// ==========================================
+// TRUST ENGINE DOMAIN (Wave 5.10 / EP2-S04)
+// ==========================================
+
+enum TrustVerificationStatus {
+  DRAFT
+  REQUESTED
+  UNDER_REVIEW
+  VERIFIED
+  SUSPENDED
+  EXPIRED
+  REVOKED
+}
+
+model TrustEvidence {
+  id String @id @default(cuid())
+
+  workspaceId String? // Optional workspace binding for tenant isolation
+  entityType  EntityType
+  entityId    String
+
+  type        String // NIB, NPWP, SBU, etc.
+  title       String
+  description String? @db.Text
+  assetId     String? // Reference to CompanyAsset or Document
+
+  issuer    String?
+  issuedAt  DateTime?
+  expiresAt DateTime?
+
+  status   TrustVerificationStatus @default(DRAFT)
+  metadata Json? // Arbitrary JSON for evidence specifics
+
+  reviewerId         String?
+  verificationResult Json? // Feedback, notes from reviewer
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([status])
+}
+
+model TrustProjection {
+  id String @id @default(cuid())
+
+  entityType EntityType
+  entityId   String
+
+  status TrustVerificationStatus @default(DRAFT)
+  score  Int                     @default(0)
+
+  verifiedItems Json? // Array of strings e.g. ["NIB", "NPWP"]
+  expiredItems  Json? // Array of strings
+  warnings      Json? // Array of strings
+  badges        Json? // Array of badge keys
+
+  lastCalculatedAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([entityType, entityId])
+}
+
+model TrustAuditLog {
+  id String @id @default(cuid())
+
+  entityType EntityType
+  entityId   String
+  evidenceId String?
+
+  actorId       String
+  action        String // e.g. "REQUEST_VERIFICATION", "APPROVE"
+  previousState String?
+  newState      String?
+  reason        String? @db.Text
+
+  timestamp DateTime @default(now())
+
+  @@index([entityType, entityId])
+}
+
+// ==========================================
+// AI PLATFORM FOUNDATION (Wave 7 / EP2-S05)
+// ==========================================
+
+enum AIConversationStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+model AIConversation {
+  id          String  @id @default(cuid())
+  workspaceId String
+  title       String?
+
+  status AIConversationStatus @default(ACTIVE)
+
+  createdBy    String?
+  createdAt    DateTime @default(now())
+  lastActivity DateTime @default(now())
+
+  // Extension point for AI Memory
+  // memoryId String?
+
+  messages  AIMessage[]
+  artifacts AIArtifact[]
+
+  @@index([workspaceId])
+  @@index([createdAt])
+}
+
+enum AIMessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  TOOL
+}
+
+model AIMessage {
+  id             String         @id @default(cuid())
+  conversationId String
+  conversation   AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  role    AIMessageRole
+  content Json? // Stored as JSON to handle complex blocks (text, tool calls, tool results)
+
+  // Telemetry (populated if role == ASSISTANT)
+  provider         String?
+  model            String?
+  promptTokens     Int?
+  completionTokens Int?
+  latency          Int? // in ms
+  estimatedCost    Float?
+  rating           Int? // 1-5 User Rating
+
+  createdAt DateTime @default(now())
+
+  @@index([conversationId])
+}
+
+enum AIArtifactStatus {
+  DRAFT
+  FINAL
+  SUPERSEDED
+}
+
+model AIArtifact {
+  id             String         @id @default(cuid())
+  conversationId String
+  conversation   AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  type     String // e.g., "COMPANY_PROFILE", "SEO_AUDIT", "SUGGESTION_SET"
+  title    String?
+  content  Json // The actual generated content/document
+  metadata Json? // Any references, source sections used
+
+  status AIArtifactStatus @default(DRAFT)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  suggestions AISuggestion[]
+
+  @@index([conversationId])
+}
+
+enum AISuggestionOperation {
+  ADD
+  REPLACE
+  REMOVE
+  APPEND
+  MERGE
+}
+
+enum AISuggestionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EDITED
+  SUPERSEDED
+}
+
+model AISuggestion {
+  id         String      @id @default(cuid())
+  artifactId String?
+  artifact   AIArtifact? @relation(fields: [artifactId], references: [id], onDelete: SetNull)
+
+  entityType  String // e.g., "COMPANY"
+  entityId    String
+  targetField String // e.g., "profile.about"
+
+  operation AISuggestionOperation
+  payload   Json // Contains the old and new states based on the operation
+
+  reason     String? @db.Text
+  confidence Float?
+  category   String?
+
+  status AISuggestionStatus @default(PENDING)
+
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  @@index([entityType, entityId])
+  @@index([artifactId])
+}
+
+// --- KNOWLEDGE PLATFORM ---
+
+model KnowledgeNode {
+  id          String  @id @default(uuid())
+  workspaceId String  @map("workspace_id")
+  entityId    String? @map("entity_id") // Universal object reference
+  label       String
+  properties  Json?
+
+  // Metadata
+  nodeType    String @map("node_type") // e.g., 'COMPANY', 'SKILL', 'TENDER'
+  domain      String // e.g., 'CORE', 'FINANCE', 'PROJECT'
+  status      String @default("ACTIVE") // 'ACTIVE', 'DRAFT', 'ARCHIVED'
+  visibility  String @default("PRIVATE") // 'PRIVATE', 'WORKSPACE', 'PUBLIC'
+  version     Int    @default(1)
+  fingerprint String
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  embeddings    KnowledgeEmbedding[]
+  outgoingEdges SemanticRelationship[] @relation("SourceNode")
+  incomingEdges SemanticRelationship[] @relation("TargetNode")
+
+  @@index([workspaceId, nodeType])
+  @@index([entityId])
+  @@map("knowledge_nodes")
+}
+
+model KnowledgeEmbedding {
+  id                 String   @id @default(uuid())
+  knowledgeNodeId    String   @map("knowledge_node_id")
+  provider           String // e.g., 'mock', 'openai'
+  model              String // e.g., 'text-embedding-3-small'
+  dimension          Int // e.g., 1536
+  hash               String // content hash to detect changes
+  embeddingReference String   @map("embedding_reference") // External reference ID
+  generatedAt        DateTime @default(now()) @map("generated_at")
+
+  node KnowledgeNode @relation(fields: [knowledgeNodeId], references: [id], onDelete: Cascade)
+
+  @@index([knowledgeNodeId])
+  @@map("knowledge_embeddings")
+}
+
+model SemanticRelationship {
+  id        String @id @default(uuid())
+  sourceId  String @map("source_id")
+  targetId  String @map("target_id")
+  predicate String // e.g. "HAS_SKILL", "OWNS_EQUIPMENT"
+
+  direction  String @default("DIRECTED") // 'DIRECTED', 'UNDIRECTED', 'BIDIRECTIONAL'
+  confidence Float  @default(1.0)
+  source     String @default("SYSTEM") // 'SYSTEM', 'AI', 'USER'
+
+  weight     Float    @default(1.0)
+  properties Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  sourceNode KnowledgeNode @relation("SourceNode", fields: [sourceId], references: [id], onDelete: Cascade)
+  targetNode KnowledgeNode @relation("TargetNode", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@index([sourceId, predicate])
+  @@index([targetId, predicate])
+  @@map("semantic_relationships")
+}
+
+model KnowledgeSnapshot {
+  id              String   @id @default(uuid())
+  workspaceId     String   @map("workspace_id")
+  version         Int
+  nodesCount      Int      @default(0) @map("nodes_count")
+  edgesCount      Int      @default(0) @map("edges_count")
+  embeddingsCount Int      @default(0) @map("embeddings_count")
+  fingerprint     String
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([workspaceId])
+  @@map("knowledge_snapshots")
+}
+
+// --- COGNITIVE OPERATING SYSTEM (AI-03B) ---
+
+enum CognitiveMemoryType {
+  CONVERSATION
+  WORKING
+  DECISION
+  EXECUTION
+  REFLECTION
+}
+
+model CognitiveSession {
+  id               String   @id @default(uuid())
+  workspaceId      String   @map("workspace_id")
+  aiConversationId String?  @map("ai_conversation_id")
+  status           String   @default("ACTIVE") // ACTIVE, CLOSED
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  goals CognitiveGoal[]
+
+  @@index([workspaceId])
+  @@map("cognitive_sessions")
+}
+
+model CognitiveGoal {
+  id        String @id @default(uuid())
+  sessionId String @map("session_id")
+  title     String
+  status    String @default("PENDING") // PENDING, ACTIVE, WAITING_APPROVAL, COMPLETED, FAILED, CANCELLED
+  priority  String @default("NORMAL") // LOW, NORMAL, HIGH, CRITICAL
+  initiator String // e.g. "SYSTEM", "USER"
+  version   Int    @default(1)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  session CognitiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  plans     CognitivePlan[]
+  decisions CognitiveDecision[]
+  memories  CognitiveMemory[]
+  lessons   CognitiveLesson[]
+  telemetry CognitiveTelemetry[]
+
+  @@index([sessionId])
+  @@map("cognitive_goals")
+}
+
+model CognitiveMemory {
+  id        String              @id @default(uuid())
+  goalId    String              @map("goal_id")
+  type      CognitiveMemoryType
+  content   Json
+  version   Int                 @default(1)
+  createdAt DateTime            @default(now()) @map("created_at")
+
+  goal CognitiveGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId, type])
+  @@map("cognitive_memories")
+}
+
+model CognitiveDecision {
+  id           String   @id @default(uuid())
+  goalId       String   @map("goal_id")
+  alternatives Json // Array of alternatives
+  selected     Json // Selected alternative
+  score        Float
+  confidence   Float
+  explanation  String   @db.Text
+  version      Int      @default(1)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  goal CognitiveGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+  @@map("cognitive_decisions")
+}
+
+model CognitivePlan {
+  id                String   @id @default(uuid())
+  goalId            String   @map("goal_id")
+  planType          String // LOGICAL, COMPILED
+  executionGraph    Json? // DAG output
+  estimatedCost     Float?
+  estimatedDuration Int? // in seconds
+  criticalPath      Json?
+  version           Int      @default(1)
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  goal  CognitiveGoal   @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  tasks CognitiveTask[]
+
+  @@index([goalId])
+  @@map("cognitive_plans")
+}
+
+model CognitiveTask {
+  id           String @id @default(uuid())
+  planId       String @map("plan_id")
+  name         String
+  status       String @default("READY") // READY, RUNNING, WAITING, FAILED, RETRYING, COMPLETED, CANCELLED, WAITING_APPROVAL
+  priority     Int    @default(0)
+  retryCount   Int    @default(0)
+  maxRetries   Int    @default(3)
+  timeoutMs    Int    @default(30000)
+  dependencies Json? // Array of Task IDs
+  payload      Json?
+  version      Int    @default(1)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  plan CognitivePlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId, status])
+  @@map("cognitive_tasks")
+}
+
+model CognitiveLesson {
+  id              String   @id @default(uuid())
+  goalId          String   @map("goal_id")
+  lessonType      String // KNOWLEDGE_UPDATE, IMPROVEMENT_SUGGESTION
+  content         Json
+  knowledgeNodeId String?  @map("knowledge_node_id")
+  version         Int      @default(1)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  goal CognitiveGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId, lessonType])
+  @@map("cognitive_lessons")
+}
+
+model CognitiveTelemetry {
+  id           String   @id @default(uuid())
+  goalId       String   @map("goal_id")
+  traceId      String
+  spanId       String
+  parentSpanId String?
+  durationMs   Int
+  status       String // OK, ERROR
+  component    String // e.g. "ReasoningEngine", "RuleEngine"
+  metrics      Json? // memorySize, ruleCount, constraintCount
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  goal CognitiveGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId, traceId])
+  @@map("cognitive_telemetry")
+}
+
+// --- AI SERVICE MESH (AI-04B) ---
+
+model PersistentCapability {
+  id                String  @id
+  version           Int     @default(1)
+  domain            String
+  description       String? @db.Text
+  inputSchema       Json
+  outputSchema      Json
+  requiredTools     Json?
+  requiredKnowledge Json?
+  requiredPolicies  Json?
+
+  status    String   @default("ACTIVE") // DRAFT, ACTIVE, DEPRECATED, DISABLED
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("persistent_capabilities")
+}
+
+model PersistentWorkflow {
+  id            String  @id
+  version       Int     @default(1)
+  owner         String?
+  tags          Json?
+  compatibility Json? // e.g. SDK version
+  status        String  @default("ACTIVE") // DRAFT, ACTIVE, DEPRECATED, DISABLED
+
+  executionGraph Json
+  approvalRules  Json?
+  rollbackRules  Json?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("persistent_workflows")
+}
+
+model MeshService {
+  id            String   @id
+  name          String
+  url           String
+  healthStatus  String   @default("HEALTHY")
+  lastHeartbeat DateTime @default(now())
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("mesh_services")
+}
+
+model MeshMetric {
+  id          String   @id @default(uuid())
+  timestamp   DateTime @default(now())
+  metricName  String
+  metricValue Float
+  dimensions  Json? // e.g. { capability: "COMPANY_SEO_AUDIT" }
+
+  @@index([metricName, timestamp])
+  @@map("mesh_metrics")
+}
+
+model EventStore {
+  id             String @id @default(uuid())
+  eventId        String @unique
+  eventType      String
+  classification String
+  priority       String
+  pii            String
+
+  aggregateId   String
+  aggregateType String
+  workspaceId   String
+  version       Int
+
+  payload  Json
+  metadata Json?
+
+  correlationId String
+  causationId   String
+  traceId       String
+  spanId        String
+  parentSpanId  String?
+
+  timestamp DateTime @default(now())
+
+  @@index([aggregateId, aggregateType, version])
+  @@index([correlationId])
+  @@map("event_store")
+}
+
+model EventSnapshot {
+  id            String @id @default(uuid())
+  aggregateId   String
+  aggregateType String
+  version       Int
+  state         Json
+
+  timestamp DateTime @default(now())
+
+  @@unique([aggregateId, aggregateType])
+  @@map("event_snapshots")
+}
+
+model EventDLQ {
+  id           String @id @default(uuid())
+  eventId      String
+  subscriberId String
+  errorReason  String
+  retryCount   Int    @default(0)
+
+  payload  Json
+  metadata Json?
+
+  timestamp DateTime @default(now())
+
+  @@index([subscriberId, eventId])
+  @@map("event_dlq")
+}
+
+model RegisteredSubscriber {
+  id          String @id
+  name        String
+  eventTypes  Json // list of subscribed event types
+  priority    Int
+  concurrency Int
+  retryPolicy Json // configuration for retry backoff
+  status      String @default("ACTIVE") // ACTIVE, DISABLED
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("registered_subscribers")
 }

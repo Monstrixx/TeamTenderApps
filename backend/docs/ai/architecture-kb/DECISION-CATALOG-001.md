@@ -74,3 +74,17 @@
 50. **Lock 50:** Full Explainability — All AI decisions traceable to raw evidence inputs.
 51. **Lock 51:** Plugin Marketplace Readiness — Isolated `install`, `upgrade`, `rollback`, `uninstall`.
 52. **Lock 52:** Domain Independence — Plugin executable in standalone mode via mock platform context.
+
+### Era-5 Advanced Domain Intelligence Locks (Locks 59 – 64)
+53. **Lock 53:** Document Lineage — $\text{Knowledge Node} \rightarrow \text{Document} \rightarrow \text{Page} \rightarrow \text{Block} \rightarrow \text{Bounding Box} \rightarrow \text{OCR Version}$.
+54. **Lock 54:** Multi-modal Evidence — Evidence supports text, image region, table, signature, stamp, QR/barcode, handwriting.
+55. **Lock 55:** Layout Preservation — Chunks preserve heading hierarchy, page number, section, table position, bounding box.
+56. **Lock 56:** Confidence Propagation — Pipeline confidence flows ($\text{OCR} \rightarrow \text{Table} \rightarrow \text{Clause} \rightarrow \text{Node}$).
+57. **Lock 57:** Document Fingerprint — SHA256, Version, MIME, Page Count, Language, Encoding, Producer.
+58. **Lock 58:** Semantic Citation — Verifiable citations ($\text{Clause}, \text{Page}, \text{Coordinates}, \text{Confidence}$).
+59. **Lock 59:** Universal Document Identity — Global identity ($\text{DocumentID}, \text{Fingerprint}, \text{KnowledgeID}, \text{Version}, \text{Workspace}, \text{Owner}, \text{Retention}, \text{Classification}$).
+60. **Lock 60:** Cross-document Relationship — Graph tracing ($\text{Tender Doc} \rightarrow \text{Addendum} \rightarrow \text{Clarification} \rightarrow \text{Contract} \rightarrow \text{Variation Order}$).
+61. **Lock 61:** Citation Integrity — Citation points to original evidence even if knowledge evolves.
+62. **Lock 62:** Document Provenance — Full origin tracking ($\text{Origin} \rightarrow \text{Uploader} \rightarrow \text{Import Method} \rightarrow \text{Pipeline} \rightarrow \text{Validation Result}$).
+63. **Lock 63:** Knowledge Confidence Aggregation — Confidence aggregated across Document, Section, Chapter, Package levels.
+64. **Lock 64:** Enterprise Knowledge Package — Output artifact containing Metadata, Evidence, Citations, Nodes, Relationships, Confidence, Compliance, Fingerprint.
